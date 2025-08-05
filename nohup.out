@@ -1,0 +1,64 @@
+bash: tart.sh: 没有那个文件或目录
+[0;32m=== 启动 AI 模型能力测评平台 ===[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+服务器运行在端口 3001
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+
+  VITE v7.0.6  ready in 263 ms
+
+  ➜  Local:   http://localhost:5174/
+  ➜  Network: http://192.168.1.6:5174/
+  ➜  Network: http://172.18.0.1:5174/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+15:33:16 [vite] (client) hmr update /src/App.css
+15:33:17 [vite] (client) hmr update /src/App.css
+15:33:27 [vite] (client) hmr update /src/components/Layout.jsx
+15:33:28 [vite] (client) hmr update /src/components/Layout.jsx
+15:33:37 [vite] (client) hmr update /src/pages/Home.jsx
+15:33:38 [vite] (client) hmr update /src/pages/Home.jsx
+15:33:53 [vite] (client) hmr update /src/index.css
+15:33:53 [vite] (client) hmr update /src/index.css
+15:36:44 [vite] (client) hmr update /src/index.css
+15:36:44 [vite] (client) hmr update /src/index.css
+15:56:25 [vite] (client) page reload index.html
+15:56:25 [vite] (client) page reload index.html
+16:18:38 [vite] (client) hmr update /src/pages/Models.jsx
+16:18:38 [vite] (client) hmr update /src/pages/Models.jsx
+16:19:23 [vite] (client) hmr update /src/pages/Models.jsx
+16:22:11 [vite] (client) hmr update /src/pages/Models.jsx
+16:22:11 [vite] (client) hmr update /src/pages/Models.jsx
+16:22:46 [vite] (client) hmr update /src/pages/Flows.jsx
+16:22:47 [vite] (client) hmr update /src/pages/Flows.jsx
+16:22:54 [vite] (client) hmr update /src/pages/Datasets.jsx
+16:22:54 [vite] (client) hmr update /src/pages/Datasets.jsx
+16:23:02 [vite] (client) hmr update /src/pages/Agents.jsx
+16:23:02 [vite] (client) hmr update /src/pages/Agents.jsx
+16:23:19 [vite] (client) hmr update /src/pages/Leaderboards.jsx
+16:23:20 [vite] (client) hmr update /src/pages/Leaderboards.jsx
+16:23:57 [vite] (client) hmr update /src/pages/Leaderboards.jsx
+16:23:57 [vite] (client) hmr update /src/pages/Leaderboards.jsx
+17:00:58 [vite] (client) hmr update /src/contexts/AuthContext.jsx
+17:00:59 [vite] (client) hmr invalidate /src/contexts/AuthContext.jsx Could not Fast Refresh ("useAuth" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+17:00:59 [vite] (client) hmr update /src/App.jsx, /src/components/Layout.jsx, /src/pages/Home.jsx, /src/pages/Login.jsx, /src/pages/Register.jsx, /src/pages/Models.jsx, /src/pages/ModelDetail.jsx, /src/pages/Datasets.jsx, /src/pages/DatasetDetail.jsx, /src/pages/Flows.jsx, /src/pages/FlowDetail.jsx, /src/pages/Agents.jsx, /src/pages/AgentDetail.jsx, /src/pages/Leaderboards.jsx, /src/pages/LeaderboardDetail.jsx
+17:00:59 [vite] (client) hmr update /src/contexts/AuthContext.jsx
+17:22:23 [vite] (client) hmr update /src/pages/ModelDetail.jsx
+17:38:02 [vite] (client) hmr update /src/pages/ModelDetail.jsx
