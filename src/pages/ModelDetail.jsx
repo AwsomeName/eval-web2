@@ -14,11 +14,15 @@ import {
   Modal
 } from 'antd';
 import { 
+  EditOutlined, 
   SaveOutlined, 
-  RobotOutlined, 
   SendOutlined,
+  DeleteOutlined,
+  ExclamationCircleOutlined,
+  RobotOutlined,
   ArrowLeftOutlined
 } from '@ant-design/icons';
+import TestResultDisplay from '../components/TestResultDisplay';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -45,6 +49,7 @@ const ModelDetail = () => {
   const [testInput, setTestInput] = useState('');
   const [testOutput, setTestOutput] = useState('');
   const [testing, setTesting] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   // 添加缺失的状态
   const [selectedApiUrl, setSelectedApiUrl] = useState('');
   const [customApiUrl, setCustomApiUrl] = useState(true);
@@ -64,7 +69,7 @@ const ModelDetail = () => {
     setSelectedApiUrl(value);
     setCustomApiUrl(value === '');
     if (value !== '') {
-      form.setFieldsValue({ api_url: value });
+      form.setFieldsValue({ access_url: value });
     }
   };
 
@@ -79,9 +84,9 @@ const ModelDetail = () => {
         form.setFieldsValue(data);
         
         // 设置 API URL 类型
-        const predefinedUrl = predefinedApiUrls.find(item => item.value === data.api_url);
+        const predefinedUrl = predefinedApiUrls.find(item => item.value === data.access_url);
         if (predefinedUrl) {
-          setSelectedApiUrl(data.api_url);
+          setSelectedApiUrl(data.access_url);
           setCustomApiUrl(false);
         } else {
           setSelectedApiUrl('');
@@ -141,18 +146,129 @@ const ModelDetail = () => {
       return;
     }
 
+    const currentFormValues = form.getFieldsValue();
+    const accessUrl = currentFormValues.access_url || model?.access_url;
+    const accessKey = currentFormValues.access_key || model?.access_key;
+    const modelName = currentFormValues.model_name || model?.model_name;
+    const modelType = currentFormValues.model_type || model?.model_type;
+
+    if (!accessUrl || !accessKey || !modelName) {
+      const missingFields = [];
+      if (!accessUrl) missingFields.push('API URL');
+      if (!accessKey) missingFields.push('API Key');
+      if (!modelName) missingFields.push('模型名称');
+      
+      const errorMsg = `请先配置完整的模型信息，缺少：${missingFields.join('、')}`;
+      message.error(errorMsg);
+      setTestOutput(`配置错误: ${errorMsg}`);
+      return;
+    }
+
+    if (modelType !== 'text') {
+      const warningMsg = '当前仅支持文本模型的测试';
+      message.warning(warningMsg);
+      setTestOutput(`不支持的模型类型: ${modelType}\n${warningMsg}`);
+      return;
+    }
+
     setTesting(true);
+    setIsStreaming(true);
+    setTestOutput('');
+
     try {
-      // 这里应该调用实际的模型API进行测试
-      // 为了演示，我们模拟一个响应
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setTestOutput(
-        `模型响应示例（基于输入：${testInput}）\n\n` +
-        `这是一个模拟的模型响应。实际实现中，这里会调用模型的API endpoint，` +
-        `使用配置的API Key和请求格式发送请求，并返回模型的实际输出结果。`
-      );
+      const requestBody = {
+        model: modelName,
+        messages: [{
+          role: 'user',
+          content: testInput
+        }],
+        stream: true,
+        temperature: 0.7,
+        max_tokens: 1000
+      };
+
+      const requestUrl = `${accessUrl}/chat/completions`;
+      setTestOutput('正在连接API...\n\n');
+
+      const response = await fetch(requestUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessKey}`
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        setIsStreaming(false);
+        const errorText = await response.text();
+        
+        let errorMessage = 'API调用失败';
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error?.message || errorJson.message || errorMessage;
+        } catch {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        
+        setTestOutput(`## 测试失败\n\n**错误信息:** ${errorMessage}\n\n**状态码:** ${response.status}\n\n**请检查:**\n- API URL 是否正确\n- API Key 是否有效\n- 模型名称是否正确\n- 网络连接是否正常`);
+        message.error(errorMessage);
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedContent = '';
+
+      setTestOutput('## 测试结果\n\n');
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          setIsStreaming(false);
+          break;
+        }
+        
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6).trim();
+            
+            if (data === '[DONE]') {
+              setIsStreaming(false);
+              continue;
+            }
+            
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices?.[0]?.delta?.content;
+              
+              if (content) {
+                accumulatedContent += content;
+                setTestOutput(accumulatedContent);
+              }
+            } catch (e) {
+              console.warn('JSON解析错误:', e.message);
+            }
+          }
+        }
+      }
+
+      if (!accumulatedContent) {
+        setTestOutput('模型返回了空响应，请检查输入内容或模型配置。');
+        message.warning('模型返回了空响应');
+      } else {
+        message.success('测试完成');
+      }
+
     } catch (error) {
-      message.error('测试失败，请检查模型配置');
+      console.error('测试失败:', error);
+      setIsStreaming(false);
+      setTestOutput(`## 网络错误\n\n**错误信息:** ${error.message}\n\n**可能原因:**\n- 网络连接问题\n- CORS跨域限制\n- API服务不可用\n- 请求超时`);
+      message.error(`网络错误: ${error.message}`);
     } finally {
       setTesting(false);
     }
@@ -165,22 +281,64 @@ const ModelDetail = () => {
   return (
     <div>
       {/* 页面头部 */}
-      <div style={{ marginBottom: '24px' }}>
-        <Space>
-          <Button 
-            icon={<ArrowLeftOutlined />} 
-            onClick={() => navigate('/models')}
-          >
-            返回模型库
-          </Button>
-        </Space>
-        <Title level={2} style={{ marginTop: '16px' }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '24px' 
+      }}>
+        <Title level={2} style={{ margin: 0 }}>
           <RobotOutlined style={{ marginRight: '12px', color: '#1890ff' }} />
           {isNew ? '新增模型' : (editing ? '编辑模型' : model?.name)}
         </Title>
+        <Button 
+          icon={<ArrowLeftOutlined />} 
+          onClick={() => navigate('/models')}
+        >
+          返回模型库
+        </Button>
       </div>
 
       <Row gutter={[24, 24]}>
+        {/* 模型测试 */}
+        {!isNew && (
+          <Col xs={24} lg={8}>
+            <Card title="模型测试" style={{ height: 'fit-content' }}>
+              <div style={{ marginBottom: '16px' }}>
+                <Text strong>测试输入：</Text>
+                <TextArea
+                  rows={4}
+                  placeholder="请输入测试内容..."
+                  value={testInput}
+                  onChange={(e) => setTestInput(e.target.value)}
+                  style={{ marginTop: '8px' }}
+                />
+              </div>
+              
+              <Button 
+                type="primary" 
+                icon={<SendOutlined />}
+                loading={testing}
+                onClick={handleTest}
+                style={{ marginBottom: '16px', width: '100%' }}
+              >
+                发送测试
+              </Button>
+
+              <div style={{ marginTop: '16px' }}>
+                <div style={{ marginTop: '8px' }}>
+                  <TestResultDisplay 
+                    output={testOutput}
+                    isLoading={testing}
+                    isStreaming={isStreaming}
+                    onClear={() => setTestOutput('')}
+                  />
+                </div>
+              </div>
+            </Card>
+          </Col>
+        )}
+
         {/* 模型信息表单 */}
         <Col xs={24} lg={16}>
           <Card 
@@ -241,12 +399,11 @@ const ModelDetail = () => {
                     rules={[{ required: true, message: '请选择模型类型' }]}
                   >
                     <Select placeholder="请选择模型类型">
-                      <Option value="文本">文本</Option>
-                      <Option value="语音">语音</Option>
-                      <Option value="多模态">多模态</Option>
-                      <Option value="文生图">文生图</Option>
-                      <Option value="emb">嵌入模型</Option>
-                      <Option value="图像">图像</Option>
+                      <Option value="text">文本</Option>
+                      <Option value="audio">语音</Option>
+                      <Option value="multimodal">多模态</Option>
+                      <Option value="text2image">文生图</Option>
+                      <Option value="embedding">嵌入模型</Option>
                     </Select>
                   </Form.Item>
                 </Col>
@@ -256,7 +413,7 @@ const ModelDetail = () => {
                 <Col xs={24} md={12}>
                   <Form.Item
                     label="发布机构"
-                    name="organization"
+                    name="publisher"
                   >
                     <Input placeholder="请输入发布机构" />
                   </Form.Item>
@@ -291,7 +448,7 @@ const ModelDetail = () => {
                 <Col xs={24} md={12}>
                   <Form.Item
                     label="API URL"
-                    name="api_url"
+                    name="access_url"
                     rules={[{ required: true, message: '请输入API地址' }]}
                   >
                     <Input 
@@ -304,7 +461,7 @@ const ModelDetail = () => {
 
               <Form.Item
                 label="API Key"
-                name="api_key"
+                name="access_key"
               >
                 <Input.Password placeholder="请输入API密钥" />
               </Form.Item>
@@ -380,54 +537,8 @@ const ModelDetail = () => {
                 </Form.Item>
               )}
             </Form>
-          </Card>
-        </Col>
-
-        {/* 模型测试 */}
-        {!isNew && (
-          <Col xs={24} lg={8}>
-            <Card title="模型测试" style={{ height: 'fit-content' }}>
-              <div style={{ marginBottom: '16px' }}>
-                <Text strong>测试输入：</Text>
-                <TextArea
-                  rows={4}
-                  placeholder="请输入测试内容..."
-                  value={testInput}
-                  onChange={(e) => setTestInput(e.target.value)}
-                  style={{ marginTop: '8px' }}
-                />
-              </div>
-              
-              <Button 
-                type="primary" 
-                icon={<SendOutlined />}
-                loading={testing}
-                onClick={handleTest}
-                style={{ marginBottom: '16px', width: '100%' }}
-              >
-                发送测试
-              </Button>
-
-              {testOutput && (
-                <div>
-                  <Text strong>输出结果：</Text>
-                  <div style={{ 
-                    marginTop: '8px',
-                    padding: '12px',
-                    backgroundColor: '#f5f5f5',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    whiteSpace: 'pre-wrap',
-                    maxHeight: '300px',
-                    overflowY: 'auto'
-                  }}>
-                    {testOutput}
-                  </div>
-                </div>
-              )}
             </Card>
           </Col>
-        )}
       </Row>
     </div>
   );

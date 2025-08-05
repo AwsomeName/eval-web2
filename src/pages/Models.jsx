@@ -137,36 +137,42 @@ const Models = () => {
         display: 'flex',
         flexDirection: 'column'
       }}
-      actions={[
-        ...(hasRole(['admin', 'developer']) ? [
-          <Button 
-            type="text" 
-            danger
-            icon={<DeleteOutlined />} 
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(model.id);
-            }}
-          >
-            删除
-          </Button>
-        ] : [])
-      ]}
       onClick={() => navigate(`/models/${model.id}`)}
     >
       <div style={{ flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-          <RobotOutlined style={{ fontSize: '20px', marginRight: '8px', color: '#1890ff' }} />
-          <Title level={5} style={{ margin: 0, flex: 1 }} ellipsis>
-            {model.name}
-          </Title>
+        {/* 头部：模型名称、类型和删除按钮平行布局 */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          marginBottom: '12px' 
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+            <RobotOutlined style={{ fontSize: '20px', marginRight: '8px', color: '#1890ff' }} />
+            <Title level={5} style={{ margin: 0, marginRight: '8px' }} ellipsis>
+              {model.name}
+            </Title>
+            <Tag color={getTypeColor(model.model_type)} style={{ marginLeft: '8px' }}>
+              {model.model_type}
+            </Tag>
+          </div>
+          {hasRole(['admin', 'developer']) && (
+            <Button 
+              type="text" 
+              danger
+              size="small"
+              icon={<DeleteOutlined />} 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(model.id);
+              }}
+              style={{ flexShrink: 0 }}
+            />
+          )}
         </div>
         
         <div style={{ marginBottom: '12px' }}>
           <Space wrap>
-            <Tag color={getTypeColor(model.model_type)}>
-              {model.model_type}
-            </Tag>
             {model.organization && (
               <Tag>
                 {model.organization}

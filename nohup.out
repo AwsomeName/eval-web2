@@ -62,3 +62,1172 @@ bash: tart.sh: 没有那个文件或目录
 17:00:59 [vite] (client) hmr update /src/contexts/AuthContext.jsx
 17:22:23 [vite] (client) hmr update /src/pages/ModelDetail.jsx
 17:38:02 [vite] (client) hmr update /src/pages/ModelDetail.jsx
+创建模型错误: error: new row for relation "models" violates check constraint "models_model_type_check"
+    at /home/lc/eval-web2/backend/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /home/lc/eval-web2/backend/routes/models.js:115:20 {
+  length: 345,
+  severity: 'ERROR',
+  code: '23514',
+  detail: 'Failing row contains (6, qwen-coder-plus-latest, null, null, 文本, null, null, null, null, null, 3, 2025-08-05 16:50:20.898284, 2025-08-05 16:50:20.898284).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'models',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'models_model_type_check',
+  file: 'execMain.c',
+  line: '2034',
+  routine: 'ExecConstraints'
+}
+创建模型错误: error: new row for relation "models" violates check constraint "models_model_type_check"
+    at /home/lc/eval-web2/backend/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /home/lc/eval-web2/backend/routes/models.js:115:20 {
+  length: 343,
+  severity: 'ERROR',
+  code: '23514',
+  detail: 'Failing row contains (7, qwen-coder-plus-latest, null, null, 文本, null, null, null, null, null, 3, 2025-08-05 16:50:46.84333, 2025-08-05 16:50:46.84333).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'models',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'models_model_type_check',
+  file: 'execMain.c',
+  line: '2034',
+  routine: 'ExecConstraints'
+}
+创建模型错误: error: new row for relation "models" violates check constraint "models_model_type_check"
+    at /home/lc/eval-web2/backend/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /home/lc/eval-web2/backend/routes/models.js:115:20 {
+  length: 345,
+  severity: 'ERROR',
+  code: '23514',
+  detail: 'Failing row contains (8, qwen-coder-plus-latest, null, null, 文本, null, null, null, null, null, 3, 2025-08-05 16:50:49.714682, 2025-08-05 16:50:49.714682).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'models',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'models_model_type_check',
+  file: 'execMain.c',
+  line: '2034',
+  routine: 'ExecConstraints'
+}
+00:53:54 [vite] (client) hmr update /src/pages/ModelDetail.jsx
+00:53:54 [vite] (client) hmr update /src/pages/ModelDetail.jsx
+00:54:06 [vite] (client) hmr update /src/pages/ModelDetail.jsx
+00:54:06 [vite] (client) hmr update /src/pages/ModelDetail.jsx
+00:54:29 [vite] (client) hmr update /src/pages/ModelDetail.jsx
+00:54:29 [vite] (client) hmr update /src/pages/ModelDetail.jsx
+00:54:55 [vite] (client) hmr update /src/pages/ModelDetail.jsx
+00:54:55 [vite] (client) hmr update /src/pages/ModelDetail.jsx
+获取模型详情错误: error: invalid input syntax for type integer: "undefined"
+    at /home/lc/eval-web2/backend/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /home/lc/eval-web2/backend/routes/models.js:78:20 {
+  length: 152,
+  severity: 'ERROR',
+  code: '22P02',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: "unnamed portal parameter $1 = '...'",
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'numutils.c',
+  line: '616',
+  routine: 'pg_strtoint32_safe'
+}
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+
+  VITE v7.0.6  ready in 268 ms
+
+  ➜  Local:   http://localhost:5175/
+  ➜  Network: http://192.168.1.6:5175/
+  ➜  Network: http://172.18.0.1:5175/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+[32m[nodemon] starting `node server.js`[39m
+服务器运行在端口 3001
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[32m[nodemon] starting `node server.js`[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server.js`[39m
+[32m[nodemon] starting `node server.js`[39m
+服务器运行在端口 3001
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+
+  VITE v7.0.6  ready in 267 ms
+
+  ➜  Local:   http://localhost:5176/
+  ➜  Network: http://192.168.1.6:5176/
+  ➜  Network: http://172.18.0.1:5176/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+Port 5176 is in use, trying another one...
+
+  VITE v7.0.6  ready in 280 ms
+
+  ➜  Local:   http://localhost:5177/
+  ➜  Network: http://192.168.1.6:5177/
+  ➜  Network: http://172.18.0.1:5177/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+Port 5176 is in use, trying another one...
+Port 5177 is in use, trying another one...
+
+  VITE v7.0.6  ready in 277 ms
+
+  ➜  Local:   http://localhost:5178/
+  ➜  Network: http://192.168.1.6:5178/
+  ➜  Network: http://172.18.0.1:5178/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[32m[nodemon] restarting child process[39m
+[32m[nodemon] restarting child process[39m
+[32m[nodemon] starting `node server.js`[39m
+[32m[nodemon] starting `node server.js`[39m
+[32m[nodemon] restarting child process[39m
+[32m[nodemon] restarting child process[39m
+[32m[nodemon] restarting child process[39m
+[32m[nodemon] starting `node server.js`[39m
+[32m[nodemon] starting `node server.js`[39m
+[32m[nodemon] starting `node server.js`[39m
+start.sh: 第 99 行： 3281249 挂断                  npm run dev  （工作目录：~/eval-web2/backend）
+start.sh: 行 100: 未预期的记号 ")" 附近有语法错误
+start.sh: 行 100: `tables WHERE table_name = \'models\' AND table_schema = \'public\')')'
+start.sh: 第 187 行： 206040 挂断                  npm run dev  （工作目录：~/eval-web2/backend）
+start.sh: 第 187 行： 201052 挂断                  npm run dev  （工作目录：~/eval-web2/backend）
+start.sh: 第 187 行： 175111 挂断                  npm run dev  （工作目录：~/eval-web2/backend）
+start.sh: 第 187 行： 151750 挂断                  npm run dev  （工作目录：~/eval-web2/backend）
+start.sh: 第 187 行： 206138 挂断                  npm run dev
+服务器运行在端口 3001
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+
+  VITE v7.0.6  ready in 278 ms
+
+  ➜  Local:   http://localhost:5175/
+  ➜  Network: http://192.168.1.6:5175/
+  ➜  Network: http://172.18.0.1:5175/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+
+  VITE v7.0.6  ready in 278 ms
+
+  ➜  Local:   http://localhost:5176/
+  ➜  Network: http://192.168.1.6:5176/
+  ➜  Network: http://172.18.0.1:5176/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+Port 5176 is in use, trying another one...
+
+  VITE v7.0.6  ready in 280 ms
+
+  ➜  Local:   http://localhost:5177/
+  ➜  Network: http://192.168.1.6:5177/
+  ➜  Network: http://172.18.0.1:5177/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+Port 5174 is in use, trying another one...
+[1;33m启动后端服务...[0m
+Port 5175 is in use, trying another one...
+Port 5176 is in use, trying another one...
+Port 5177 is in use, trying another one...
+
+  VITE v7.0.6  ready in 282 ms
+
+  ➜  Local:   http://localhost:5178/
+  ➜  Network: http://192.168.1.6:5178/
+  ➜  Network: http://172.18.0.1:5178/
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+Port 5176 is in use, trying another one...
+Port 5177 is in use, trying another one...
+Port 5178 is in use, trying another one...
+
+  VITE v7.0.6  ready in 282 ms
+
+  ➜  Local:   http://localhost:5179/
+  ➜  Network: http://192.168.1.6:5179/
+  ➜  Network: http://172.18.0.1:5179/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+Port 5176 is in use, trying another one...
+Port 5177 is in use, trying another one...
+Port 5178 is in use, trying another one...
+Port 5179 is in use, trying another one...
+
+  VITE v7.0.6  ready in 281 ms
+
+  ➜  Local:   http://localhost:5180/
+  ➜  Network: http://192.168.1.6:5180/
+  ➜  Network: http://172.18.0.1:5180/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+Port 5176 is in use, trying another one...
+Port 5177 is in use, trying another one...
+Port 5178 is in use, trying another one...
+Port 5179 is in use, trying another one...
+Port 5180 is in use, trying another one...
+
+  VITE v7.0.6  ready in 285 ms
+
+  ➜  Local:   http://localhost:5181/
+  ➜  Network: http://192.168.1.6:5181/
+  ➜  Network: http://172.18.0.1:5181/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+Port 5176 is in use, trying another one...
+Port 5177 is in use, trying another one...
+Port 5178 is in use, trying another one...
+Port 5179 is in use, trying another one...
+Port 5180 is in use, trying another one...
+Port 5181 is in use, trying another one...
+
+  VITE v7.0.6  ready in 283 ms
+
+  ➜  Local:   http://localhost:5182/
+  ➜  Network: http://192.168.1.6:5182/
+  ➜  Network: http://172.18.0.1:5182/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m
+[0;32m=== 重启 AI 模型能力测评平台 ===[0m
+[1;33m正在停止服务...[0m
+[0;32m前端服务已停止[0m
+[1;33m检查数据库状态...[0m
+数据库已初始化
+[1;33m启动后端服务...[0m
+
+> backend@1.0.0 dev
+> nodemon server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server.js`[39m
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/home/lc/eval-web2/backend/node_modules/express/lib/application.js:635:24)
+    at Object.<anonymous> (/home/lc/eval-web2/backend/server.js:74:5)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Object..js (node:internal/modules/cjs/loader:1895:10)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v22.17.1
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[1;33m启动前端服务...[0m
+
+> eval-web2@0.0.0 dev
+> vite
+
+Port 5174 is in use, trying another one...
+Port 5175 is in use, trying another one...
+Port 5176 is in use, trying another one...
+Port 5177 is in use, trying another one...
+Port 5178 is in use, trying another one...
+Port 5179 is in use, trying another one...
+Port 5180 is in use, trying another one...
+Port 5181 is in use, trying another one...
+Port 5182 is in use, trying another one...
+
+  VITE v7.0.6  ready in 286 ms
+
+  ➜  Local:   http://localhost:5183/
+  ➜  Network: http://192.168.1.6:5183/
+  ➜  Network: http://172.18.0.1:5183/
+[0;32m================================[0m
+[0;32m后端服务运行在: [0;34mhttp://localhost:3001[0m
+[0;32m前端服务运行在: [0;34mhttp://localhost:5174[0m
+[0;32m================================[0m
+[1;33m按 Ctrl+C 停止所有服务[0m
+[1;33m日志文件: ./server.log[0m

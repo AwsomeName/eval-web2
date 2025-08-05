@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS models (
     description TEXT,
     publisher VARCHAR(100),
     model_type VARCHAR(50) CHECK (model_type IN ('text', 'audio', 'multimodal', 'text2image', 'embedding')),
+    model_name VARCHAR(100),
     access_url TEXT,
     access_key TEXT,
     input_format TEXT,
@@ -24,6 +25,9 @@ CREATE TABLE IF NOT EXISTS models (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 添加model_name字段到现有的models表（如果表已存在）
+ALTER TABLE models ADD COLUMN IF NOT EXISTS model_name VARCHAR(100);
 
 -- 创建数据集表
 CREATE TABLE IF NOT EXISTS datasets (

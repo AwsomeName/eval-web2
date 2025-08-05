@@ -101,6 +101,7 @@ router.post('/', authenticateToken, requireRole(['admin', 'developer']), async (
       description,
       publisher,
       model_type,
+      model_name,
       access_url,
       access_key,
       input_format,
@@ -113,10 +114,10 @@ router.post('/', authenticateToken, requireRole(['admin', 'developer']), async (
     }
 
     const result = await pool.query(`
-      INSERT INTO models (name, description, publisher, model_type, access_url, access_key, input_format, output_format, example, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      INSERT INTO models (name, description, publisher, model_type, model_name, access_url, access_key, input_format, output_format, example, created_by)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
-    `, [name, description, publisher, model_type, access_url, access_key, input_format, output_format, example, req.user.id]);
+    `, [name, description, publisher, model_type, model_name, access_url, access_key, input_format, output_format, example, req.user.id]);
 
     res.status(201).json({
       message: '模型创建成功',
@@ -137,6 +138,7 @@ router.put('/:id', authenticateToken, requireRole(['admin', 'developer']), async
       description,
       publisher,
       model_type,
+      model_name,
       access_url,
       access_key,
       input_format,
@@ -158,11 +160,11 @@ router.put('/:id', authenticateToken, requireRole(['admin', 'developer']), async
     const result = await pool.query(`
       UPDATE models 
       SET name = $1, description = $2, publisher = $3, model_type = $4, 
-          access_url = $5, access_key = $6, input_format = $7, output_format = $8, 
-          example = $9, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $10
+          model_name = $5, access_url = $6, access_key = $7, input_format = $8, 
+          output_format = $9, example = $10, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $11
       RETURNING *
-    `, [name, description, publisher, model_type, access_url, access_key, input_format, output_format, example, id]);
+    `, [name, description, publisher, model_type, model_name, access_url, access_key, input_format, output_format, example, id]);
 
     res.json({
       message: '模型更新成功',
