@@ -13,6 +13,7 @@ import {
   Modal,
   message
 } from 'antd';
+import MarkdownRenderer from '../components/MarkdownRenderer';
 import { 
   PlusOutlined, 
   SearchOutlined, 
@@ -25,6 +26,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { agentsAPI } from '../utils/api'; // 导入API封装
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -53,26 +55,20 @@ const Agents = () => {
   const fetchAgents = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
+      const params = {
         page: pagination.current,
         limit: pagination.pageSize,
         ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
-      });
+      };
 
-      const response = await fetch(`http://localhost:3001/api/agents?${params}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setAgents(data.agents);
-        setPagination(prev => ({
-          ...prev,
-          total: data.total
-        }));
-      } else {
-        message.error('获取Agent列表失败');
-      }
+      const data = await agentsAPI.getAll(params);
+      setAgents(data.agents);
+      setPagination(prev => ({
+        ...prev,
+        total: data.total
+      }));
     } catch (error) {
-      message.error('网络错误，请稍后重试');
+      message.error(error.message || '网络错误，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -97,22 +93,11 @@ const Agents = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          const response = await fetch(`http://localhost:3001/api/agents/${id}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${getToken()}`
-            }
-          });
-
-          if (response.ok) {
-            message.success('删除成功');
-            fetchAgents();
-          } else {
-            const data = await response.json();
-            message.error(data.error || '删除失败');
-          }
+          await agentsAPI.delete(id);
+          message.success('删除成功');
+          fetchAgents();
         } catch (error) {
-          message.error('网络错误，请稍后重试');
+          message.error(error.message || '删除失败');
         }
       }
     });
@@ -178,20 +163,41 @@ const Agents = () => {
       onClick={() => navigate(`/agents/${agent.id}`)}
     >
       <div style={{ flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-          {getTypeIcon(agent.agent_type)}
-          <Title level={5} style={{ margin: 0, marginLeft: '8px', flex: 1 }} ellipsis>
-            {agent.name}
-          </Title>
-        </div>
-        
-        <div style={{ marginBottom: '12px' }}>
-          <Space wrap>
-            <Tag color={getTypeColor(agent.agent_type)}>
+        {/* 头部：Agent名称、类型和图标平行布局 */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          marginBottom: '12px' 
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+            {getTypeIcon(agent.agent_type)}
+            <Title level={5} style={{ margin: 0, marginLeft: '8px' }} ellipsis>
+              {agent.name}
+            </Title>
+            <Tag color={getTypeColor(agent.agent_type)} style={{ marginLeft: '8px' }}>
               {agent.agent_type === 'chatbot' ? '聊天机器人' : 
                agent.agent_type === 'assistant' ? '智能助手' :
                agent.agent_type === 'workflow' ? '工作流Agent' : '自定义Agent'}
             </Tag>
+          </div>
+          {hasRole(['admin', 'developer']) && (
+            <Button 
+              type="text" 
+              danger
+              size="small"
+              icon={<DeleteOutlined />} 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(agent.id);
+              }}
+              style={{ flexShrink: 0 }}
+            />
+          )}
+        </div>
+        
+        <div style={{ marginBottom: '12px' }}>
+          <Space wrap>
             {agent.organization && (
               <Tag>
                 {agent.organization}
@@ -200,17 +206,21 @@ const Agents = () => {
           </Space>
         </div>
         
-        <Paragraph 
-          type="secondary" 
-          ellipsis={{ rows: 3 }}
+        <div
           style={{ 
             fontSize: '13px',
             marginBottom: '12px',
-            minHeight: '54px'
+            flex: 1,
+            display: 'flex',  
+            flexDirection: 'column',  
+            overflow: 'auto'  
           }}
         >
-          {agent.description || '暂无描述'}
-        </Paragraph>
+          <MarkdownRenderer
+            content={agent.description || '暂无描述'}
+            isCard={true}
+          />
+        </div>
         
         <div style={{ marginTop: 'auto' }}>
           {agent.agent_url && (

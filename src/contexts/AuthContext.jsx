@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { message } from 'antd';
+import { authAPI } from '../utils/api'; // 导入api.js中的authAPI
 
 const AuthContext = createContext();
 
@@ -19,20 +20,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // 验证token有效性
-      fetch('http://localhost:3001/api/auth/verify', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          }
-          throw new Error('Token无效');
-        })
+      // 使用authAPI验证token有效性
+      authAPI.verify()
         .then(data => {
           setUser(data.user);
         })
@@ -49,53 +38,27 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const response = await fetch('http://localhost:3001/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        setUser(data.user);
-        message.success('登录成功！');
-        return { success: true };
-      } else {
-        message.error(data.error || '登录失败');
-        return { success: false, error: data.error };
-      }
+      // 使用authAPI进行登录
+      const data = await authAPI.login({ username, password });
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      message.success('登录成功！');
+      return { success: true };
     } catch (error) {
-      message.error('网络错误，请稍后重试');
-      return { success: false, error: '网络错误' };
+      message.error(error.message || '登录失败');
+      return { success: false, error: error.message };
     }
   };
 
   const register = async (username, password, role = 'developer') => {
     try {
-      const response = await fetch('http://localhost:3001/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password, role }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        message.success('注册成功！请登录');
-        return { success: true };
-      } else {
-        message.error(data.error || '注册失败');
-        return { success: false, error: data.error };
-      }
+      // 使用authAPI进行注册
+      await authAPI.register({ username, password, role });
+      message.success('注册成功！请登录');
+      return { success: true };
     } catch (error) {
-      message.error('网络错误，请稍后重试');
-      return { success: false, error: '网络错误' };
+      message.error(error.message || '注册失败');
+      return { success: false, error: error.message };
     }
   };
 

@@ -1,0 +1,2 @@
+ALTER TABLE models DROP CONSTRAINT IF EXISTS models_model_type_check;
+ALTER TABLE models ADD CONSTRAINT models_model_type_check CHECK (model_type IN ('text', 'image', 'video', 'asr', 'tts', 'embedding', 'rerank', 'audio', 'world', 'autonomous_driving', 'multimodal', 'text2image'));

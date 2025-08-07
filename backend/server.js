@@ -10,7 +10,17 @@ const PORT = process.env.PORT || 3001;
 // 中间件
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://tty.woniucoder.cn:35174', 'http://mt.tty.woniucoder.cn', 'https://mt.tty.woniucoder.cn'],
+  origin: [
+    'http://localhost:3001', 
+    'http://localhost:5173', 
+    'http://localhost:5174', 
+    'http://tty.woniucoder.cn:35174', 
+    'http://tty.woniucoder.cn:3001', 
+    'http://mt.tty.woniucoder.cn', 
+    'https://mt.tty.woniucoder.cn'
+    // 在这里添加新的域名
+    // 'http://your-new-domain.com'
+  ],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -30,6 +40,7 @@ app.use('/api/datasets', require('./routes/datasets'));
 app.use('/api/flows', require('./routes/flows'));
 app.use('/api/agents', require('./routes/agents'));
 app.use('/api/leaderboards', require('./routes/leaderboards'));
+app.use('/api/proxy', require('./routes/proxy')); // 添加代理路由
 
 // 健康检查
 app.get('/api/health', (req, res) => {

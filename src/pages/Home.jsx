@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Statistic, Typography, Space, Button } from 'antd';
 import { 
   RobotOutlined, 
@@ -8,6 +7,7 @@ import {
   TrophyOutlined,
   ArrowRightOutlined
 } from '@ant-design/icons';
+import { useState, useEffect } from 'react'; // 添加缺失的导入
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -31,7 +31,8 @@ const Home = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/stats');
+      // 使用相对路径，让请求通过Vite的代理转发
+      const response = await fetch('/api/stats');
       if (response.ok) {
         const data = await response.json();
         setStats(data);

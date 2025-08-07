@@ -123,7 +123,7 @@ const TestResultDisplay = ({
         alignItems: 'center',
         marginBottom: '12px'
       }}>
-        <Text strong>输出结果：</Text>
+        <Text strong style={{ textAlign: 'left' }}>输出结果：</Text>
         <Space>
           {(actualContent || output) && (
             <>

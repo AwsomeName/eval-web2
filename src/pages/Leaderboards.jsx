@@ -28,6 +28,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { leaderboardsAPI } from '../utils/api'; // 导入API封装
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -59,23 +60,18 @@ const Leaderboards = () => {
   const fetchLeaderboards = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
+      const params = {
         page: currentPage,
         limit: pageSize,
         ...(searchTerm && { search: searchTerm }),
         ...(typeFilter && { type: typeFilter })
-      });
+      };
 
-      const response = await fetch(`http://localhost:3001/api/leaderboards?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setLeaderboards(data.leaderboards);
-        setTotal(data.total);
-      } else {
-        message.error('获取榜单列表失败');
-      }
+      const data = await leaderboardsAPI.getAll(params);
+      setLeaderboards(data.leaderboards);
+      setTotal(data.total);
     } catch (error) {
-      message.error('网络错误，请稍后重试');
+      message.error(error.message || '网络错误，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -83,22 +79,11 @@ const Leaderboards = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/leaderboards/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${getToken()}`
-        }
-      });
-      
-      if (response.ok) {
-        message.success('删除成功');
-        fetchLeaderboards();
-      } else {
-        const errorData = await response.json();
-        message.error(errorData.error || '删除失败');
-      }
+      await leaderboardsAPI.delete(id);
+      message.success('删除成功');
+      fetchLeaderboards();
     } catch (error) {
-      message.error('网络错误，请稍后重试');
+      message.error(error.message || '删除失败');
     }
   };
 

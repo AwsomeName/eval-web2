@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS models (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     publisher VARCHAR(100),
-    model_type VARCHAR(50) CHECK (model_type IN ('text', 'audio', 'multimodal', 'text2image', 'embedding')),
+    model_type VARCHAR(50) CHECK (model_type IN ('text', 'image', 'video', 'asr', 'tts', 'embedding', 'rerank', 'audio', 'world', 'autonomous_driving', 'multimodal')),
     model_name VARCHAR(100),
     access_url TEXT,
     access_key TEXT,

@@ -13,6 +13,7 @@ import {
   Modal,
   message
 } from 'antd';
+import MarkdownRenderer from '../components/MarkdownRenderer';
 import { 
   PlusOutlined, 
   SearchOutlined, 
@@ -22,6 +23,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { modelsAPI } from '../utils/api'; // 导入API封装
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -50,26 +52,20 @@ const Models = () => {
   const fetchModels = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
+      const params = {
         page: pagination.current,
         limit: pagination.pageSize,
         ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
-      });
+      };
 
-      const response = await fetch(`http://localhost:3001/api/models?${params}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setModels(data.models);
-        setPagination(prev => ({
-          ...prev,
-          total: data.total
-        }));
-      } else {
-        message.error('获取模型列表失败');
-      }
+      const data = await modelsAPI.getAll(params);
+      setModels(data.models);
+      setPagination(prev => ({
+        ...prev,
+        total: data.total
+      }));
     } catch (error) {
-      message.error('网络错误，请稍后重试');
+      message.error(error.message || '网络错误，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -80,8 +76,26 @@ const Models = () => {
     setPagination(prev => ({ ...prev, current: 1 }));
   };
 
+  const typeMapping = {
+    '文本模型': 'text',
+    '图像生成模型': 'image',
+    '视频生成模型': 'video',
+    '音频识别-ASR': 'asr',
+    '语音合成-TTS': 'tts',
+    '嵌入模型-emb': 'embedding',
+    '排序模型-rerank': 'rerank',
+    'Audio模型': 'audio',
+    '世界模型': 'world',
+    '自动驾驶模型': 'autonomous_driving',
+    '多模态模型': 'multimodal'
+  };
+  
   const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    if (key === 'type' && value) {
+      setFilters(prev => ({ ...prev, [key]: typeMapping[value] || value }));
+    } else {
+      setFilters(prev => ({ ...prev, [key]: value }));
+    }
     setPagination(prev => ({ ...prev, current: 1 }));
   };
 
@@ -94,22 +108,11 @@ const Models = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          const response = await fetch(`http://localhost:3001/api/models/${id}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${getToken()}`
-            }
-          });
-
-          if (response.ok) {
-            message.success('删除成功');
-            fetchModels();
-          } else {
-            const data = await response.json();
-            message.error(data.error || '删除失败');
-          }
+          await modelsAPI.delete(id);
+          message.success('删除成功');
+          fetchModels();
         } catch (error) {
-          message.error('网络错误，请稍后重试');
+          message.error(error.message || '删除失败');
         }
       }
     });
@@ -117,12 +120,17 @@ const Models = () => {
 
   const getTypeColor = (type) => {
     const colors = {
-      '文本': 'blue',
-      '语音': 'green',
-      '多模态': 'purple',
-      '文生图': 'orange',
-      'emb': 'cyan',
-      '图像': 'red'
+      'text': 'blue',
+      'image': 'red',
+      'video': 'orange',
+      'asr': 'green',
+      'tts': 'cyan',
+      'embedding': 'purple',
+      'rerank': 'magenta',
+      'audio': 'lime',
+      'world': 'gold',
+      'autonomous_driving': 'geekblue',
+      'multimodal': 'volcano'
     };
     return colors[type] || 'default';
   };
@@ -130,7 +138,7 @@ const Models = () => {
   const ModelCard = ({ model }) => (
     <Card
       hoverable
-      style={{ height: '300px' }}
+      style={{ height: '320px' }} // 增加整体高度从300px到320px
       bodyStyle={{ 
         padding: '16px',
         height: '100%',
@@ -181,17 +189,24 @@ const Models = () => {
           </Space>
         </div>
         
-        <Paragraph 
-          type="secondary" 
-          ellipsis={{ rows: 3 }}
+        {/* 添加模型描述标签 */}
+        <Text strong style={{ fontSize: '13px', marginBottom: '4px', display: 'block' }}>模型描述：</Text>
+        <div
           style={{ 
             fontSize: '13px',
             marginBottom: '12px',
-            flex: 1
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'auto',  // 改为auto以允许滚动
+            maxHeight: '180px'
           }}
         >
-          {model.description || '暂无描述'}
-        </Paragraph>
+          <MarkdownRenderer
+            content={model.description || '暂无描述'}
+            isCard={true}
+          />
+        </div>
         
         <div style={{ marginTop: 'auto' }}>
           {model.api_url && (
@@ -246,12 +261,17 @@ const Models = () => {
               style={{ width: '100%' }}
               onChange={(value) => handleFilterChange('type', value)}
             >
-              <Option value="文本">文本</Option>
-              <Option value="语音">语音</Option>
-              <Option value="多模态">多模态</Option>
-              <Option value="文生图">文生图</Option>
-              <Option value="emb">嵌入模型</Option>
-              <Option value="图像">图像</Option>
+              <Option value="文本模型">文本模型</Option>
+              <Option value="图像生成模型">图像生成模型</Option>
+              <Option value="视频生成模型">视频生成模型</Option>
+              <Option value="音频识别-ASR">音频识别-ASR</Option>
+              <Option value="语音合成-TTS">语音合成-TTS</Option>
+              <Option value="嵌入模型-emb">嵌入模型-emb</Option>
+              <Option value="排序模型-rerank">排序模型-rerank</Option>
+              <Option value="Audio模型">Audio模型</Option>
+              <Option value="世界模型">世界模型</Option>
+              <Option value="自动驾驶模型">自动驾驶模型</Option>
+              <Option value="多模态模型">多模态模型</Option>
             </Select>
           </Col>
           <Col xs={24} sm={12} md={8}>

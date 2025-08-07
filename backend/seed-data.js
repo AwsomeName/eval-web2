@@ -1,3 +1,4 @@
+// 添加数据库连接导入
 const pool = require('./config/database');
 
 async function seedDatabase() {

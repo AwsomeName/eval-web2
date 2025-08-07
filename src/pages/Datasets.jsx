@@ -13,6 +13,7 @@ import {
   Modal,
   message
 } from 'antd';
+import MarkdownRenderer from '../components/MarkdownRenderer';
 import { 
   PlusOutlined, 
   SearchOutlined, 
@@ -23,6 +24,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { datasetsAPI } from '../utils/api'; // 导入API封装
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -51,26 +53,20 @@ const Datasets = () => {
   const fetchDatasets = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
+      const params = {
         page: pagination.current,
         limit: pagination.pageSize,
         ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
-      });
+      };
 
-      const response = await fetch(`http://localhost:3001/api/datasets?${params}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setDatasets(data.datasets);
-        setPagination(prev => ({
-          ...prev,
-          total: data.total
-        }));
-      } else {
-        message.error('获取数据集列表失败');
-      }
+      const data = await datasetsAPI.getAll(params);
+      setDatasets(data.datasets);
+      setPagination(prev => ({
+        ...prev,
+        total: data.total
+      }));
     } catch (error) {
-      message.error('网络错误，请稍后重试');
+      message.error(error.message || '网络错误，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -95,22 +91,11 @@ const Datasets = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          const response = await fetch(`http://localhost:3001/api/datasets/${id}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${getToken()}`
-            }
-          });
-
-          if (response.ok) {
-            message.success('删除成功');
-            fetchDatasets();
-          } else {
-            const data = await response.json();
-            message.error(data.error || '删除失败');
-          }
+          await datasetsAPI.delete(id);
+          message.success('删除成功');
+          fetchDatasets();
         } catch (error) {
-          message.error('网络错误，请稍后重试');
+          message.error(error.message || '删除失败');
         }
       }
     });
@@ -151,36 +136,42 @@ const Datasets = () => {
         display: 'flex',
         flexDirection: 'column'
       }}
-      actions={[
-        ...(hasRole(['admin', 'developer']) ? [
-          <Button 
-            type="text" 
-            danger
-            icon={<DeleteOutlined />} 
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(dataset.id);
-            }}
-          >
-            删除
-          </Button>
-        ] : [])
-      ]}
       onClick={() => navigate(`/datasets/${dataset.id}`)}
     >
       <div style={{ flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-          <DatabaseOutlined style={{ fontSize: '20px', marginRight: '8px', color: '#52c41a' }} />
-          <Title level={5} style={{ margin: 0, flex: 1 }} ellipsis>
-            {dataset.name}
-          </Title>
+        {/* 头部：数据集名称、类型和删除按钮平行布局 */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          marginBottom: '12px' 
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+            <DatabaseOutlined style={{ fontSize: '20px', marginRight: '8px', color: '#52c41a' }} />
+            <Title level={5} style={{ margin: 0, marginRight: '8px' }} ellipsis>
+              {dataset.name}
+            </Title>
+            <Tag color={getTypeColor(dataset.data_type)} style={{ marginLeft: '8px' }}>
+              {dataset.data_type}
+            </Tag>
+          </div>
+          {hasRole(['admin', 'developer']) && (
+            <Button 
+              type="text" 
+              danger
+              size="small"
+              icon={<DeleteOutlined />} 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(dataset.id);
+              }}
+              style={{ flexShrink: 0 }}
+            />
+          )}
         </div>
         
         <div style={{ marginBottom: '12px' }}>
           <Space wrap>
-            <Tag color={getTypeColor(dataset.data_type)}>
-              {dataset.data_type}
-            </Tag>
             {dataset.organization && (
               <Tag>
                 {dataset.organization}
@@ -189,19 +180,23 @@ const Datasets = () => {
           </Space>
         </div>
         
-        <Paragraph 
-          type="secondary" 
-          ellipsis={{ rows: 2 }}
+        <div
           style={{ 
             fontSize: '13px',
             marginBottom: '12px',
-            minHeight: '36px'
+            flex: 1,
+            display: 'flex',  // 添加flex布局
+            flexDirection: 'column',  // 垂直方向排列
+            overflow: 'auto'  // 保留滚动功能
           }}
         >
-          {dataset.description || '暂无描述'}
-        </Paragraph>
+          <MarkdownRenderer
+            content={dataset.description || '暂无描述'}
+            isCard={true}
+          />
+        </div>
         
-        <div style={{ marginBottom: '12px' }}>
+        <div style={{ marginBottom: '12px', marginTop: 'auto' }}>
           <Row gutter={[8, 4]}>
             <Col span={12}>
               <Text type="secondary" style={{ fontSize: '12px' }}>

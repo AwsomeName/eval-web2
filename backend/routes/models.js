@@ -94,38 +94,50 @@ router.get('/:id', async (req, res) => {
 });
 
 // 创建模型
-router.post('/', authenticateToken, requireRole(['admin', 'developer']), async (req, res) => {
-  try {
-    const {
-      name,
-      description,
-      publisher,
-      model_type,
-      model_name,
-      access_url,
-      access_key,
-      input_format,
-      output_format,
-      example
-    } = req.body;
+router.post('/', authenticateToken, async (req, res) => {
+    try {
+        const { name, description, publisher, model_name, model_type, api_url, api_key, system_prompt } = req.body;
 
-    if (!name || !model_type) {
-      return res.status(400).json({ error: '模型名称和类型不能为空' });
-    }
+        // 添加调试日志
+        console.log('提交的model_type值:', model_type);
+        console.log('提交的model_type类型:', typeof model_type);
+        console.log('允许的model_type值:', [
+            'text', 'image', 'video', 'asr', 'tts', 'embedding', 'rerank', 'audio', 'world', 'autonomous_driving', 'multimodal'
+        ]);
 
-    const result = await pool.query(`
-      INSERT INTO models (name, description, publisher, model_type, model_name, access_url, access_key, input_format, output_format, example, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      RETURNING *
-    `, [name, description, publisher, model_type, model_name, access_url, access_key, input_format, output_format, example, req.user.id]);
+        // 验证必填字段
+        if (!name || !model_type) {
+            return res.status(400).json({ error: '名称和模型类型为必填项' });
+        }
+
+        // 规范化model_type值以确保匹配约束
+        const normalizedModelType = model_type.trim().toLowerCase();
+        
+        // 验证model_type是否在允许的值列表中
+        const allowedTypes = ['text', 'image', 'video', 'asr', 'tts', 'embedding', 'rerank', 'audio', 'world', 'autonomous_driving', 'multimodal', 'text2image'];
+        if (!allowedTypes.includes(normalizedModelType)) {
+            return res.status(400).json({ error: `模型类型必须是以下值之一: ${allowedTypes.join(', ')}` });
+        }
+
+        // 执行数据库插入
+        // 更详细的调试日志
+        console.log('提交的model_type值(规范化后):', normalizedModelType);
+        console.log('插入语句:', `INSERT INTO models (name, description, publisher, model_name, model_type, access_url, access_key, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`);
+        console.log('插入参数:', [name, description, publisher, model_name, normalizedModelType, api_url, api_key, req.user.id]);
+        
+        const result = await pool.query(
+            `INSERT INTO models (name, description, publisher, model_name, model_type, access_url, access_key, created_by)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+            [name, description, publisher, model_name, normalizedModelType, api_url, api_key, req.user.id]
+        );
 
     res.status(201).json({
       message: '模型创建成功',
       data: result.rows[0]
     });
   } catch (error) {
-    console.error('创建模型错误:', error);
-    res.status(500).json({ error: '服务器错误' });
+    console.error('创建模型详细错误:', error.message, error.stack);
+    res.status(500).json({ error: '服务器错误: ' + error.message });
   }
 });
 

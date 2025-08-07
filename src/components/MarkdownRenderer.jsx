@@ -2,12 +2,13 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+// 使用ES Module导入
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Typography } from 'antd';
 
 const { Text } = Typography;
 
-const MarkdownRenderer = ({ content, isError = false, isStreaming = false }) => {
+const MarkdownRenderer = ({ content, isError = false, isStreaming = false, isCard = false }) => {
   // 如果是错误信息，直接显示为纯文本
   if (isError) {
     return (
@@ -59,12 +60,18 @@ const MarkdownRenderer = ({ content, isError = false, isStreaming = false }) => 
   // 渲染markdown内容
   return (
     <div style={{
-      backgroundColor: '#fafafa',
-      borderRadius: '6px',
-      padding: '16px',
-      maxHeight: '400px',
-      overflowY: 'auto',
-      border: '1px solid #d9d9d9'
+      backgroundColor: isCard ? 'transparent' : '#fafafa',
+      borderRadius: isCard ? '0' : '6px',
+      padding: isCard ? '0' : '16px',
+      maxHeight: isCard ? 'none' : '400px',  // 改为 none 而不是 100%
+      height: isCard ? 'auto' : 'auto',  // 改为 auto 而不是 100%
+      display: isCard ? 'flex' : 'block',  
+      flexDirection: 'column',  
+      overflowY: isCard ? 'visible' : 'auto',  // 改为 visible 而不是 auto
+      overflowX: 'hidden', // 水平溢出隐藏
+      border: isCard ? 'none' : '1px solid #d9d9d9',
+      wordBreak: 'break-word', // 长词换行
+      fontSize: isCard ? '12px' : 'inherit' // 在卡片模式下稍微减小字体大小以显示更多内容
     }}>
       {isStreaming && (
         <div style={{
@@ -125,7 +132,12 @@ const MarkdownRenderer = ({ content, isError = false, isStreaming = false }) => 
             </h3>
           ),
           p: ({ children }) => (
-            <p style={{ color: '#262626', lineHeight: '1.6', marginBottom: '12px' }}>
+            <p style={{ 
+              color: '#262626', 
+              lineHeight: '1.6', 
+              marginBottom: isCard ? '8px' : '12px',  // 卡片模式下减小段落间距
+              flex: isCard ? '1' : 'none'  // 让段落在卡片模式下可以拉伸
+            }}>
               {children}
             </p>
           ),

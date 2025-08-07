@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // 创建 axios 实例
 const api = axios.create({
@@ -199,4 +199,7 @@ export const leaderboardsAPI = {
   })
 };
 
+// 添加默认导出
 export default api;
+
+// 文件结束，不需要重复的authAPI导出
