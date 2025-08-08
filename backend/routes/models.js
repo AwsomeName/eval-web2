@@ -96,7 +96,7 @@ router.get('/:id', async (req, res) => {
 // 创建模型
 router.post('/', authenticateToken, async (req, res) => {
     try {
-        const { name, description, publisher, model_name, model_type, api_url, api_key, system_prompt } = req.body;
+        const { name, description, publisher, model_name, model_type, access_url, access_key, system_prompt } = req.body;
 
         // 添加调试日志
         console.log('提交的model_type值:', model_type);
@@ -128,7 +128,7 @@ router.post('/', authenticateToken, async (req, res) => {
         const result = await pool.query(
             `INSERT INTO models (name, description, publisher, model_name, model_type, access_url, access_key, created_by)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-            [name, description, publisher, model_name, normalizedModelType, api_url, api_key, req.user.id]
+            [name, description, publisher, model_name, normalizedModelType, access_url, access_key, req.user.id]
         );
 
     res.status(201).json({

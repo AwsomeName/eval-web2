@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Card, 
   Form, 
@@ -24,7 +24,8 @@ import {
   ArrowLeftOutlined,
   UploadOutlined,
   PictureOutlined,
-  VideoCameraOutlined
+  VideoCameraOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 import TestResultDisplay from '../components/TestResultDisplay';
 import MarkdownRenderer from '../components/MarkdownRenderer';  // 导入 MarkdownRenderer 组件
@@ -34,6 +35,8 @@ import { useAuth } from '../contexts/AuthContext';
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // 预定义的API URL选项
 const predefinedApiUrls = [
@@ -62,6 +65,12 @@ const ModelDetail = () => {
   // 添加缺失的状态
   const [selectedApiUrl, setSelectedApiUrl] = useState('');
   const [customApiUrl, setCustomApiUrl] = useState(true);
+  // 文件上传相关状态
+  const [fileList, setFileList] = useState([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  const [previewTitle, setPreviewTitle] = useState('');
+  const fileInputRef = useRef(null);
 
   const isNew = id === 'new';
 
@@ -86,7 +95,7 @@ const ModelDetail = () => {
   const fetchModel = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/models/${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/models/${id}`);
       if (response.ok) {
         const data = await response.json();
         setModel(data);
@@ -116,8 +125,8 @@ const ModelDetail = () => {
     setSaving(true);
     try {
       const url = isNew 
-        ? 'http://localhost:3001/api/models'
-        : `http://localhost:3001/api/models/${id}`;
+        ? `${API_BASE_URL}/api/models`
+        : `${API_BASE_URL}/api/models/${id}`;
       
       const response = await fetch(url, {
         method: isNew ? 'POST' : 'PUT',
@@ -297,59 +306,58 @@ const ModelDetail = () => {
     }
   };
 
-  // 处理媒体文件上传
-  const handleMediaUpload = (file) => {
-    // 验证文件类型
-    const isImage = file.type.startsWith('image/');
-    const isVideo = file.type.startsWith('video/');
-    
-    if (!isImage && !isVideo) {
-      message.error('只支持图片或视频文件!');
-      return Upload.LIST_IGNORE;
+  // 添加文件预览处理函数
+  const handlePreview = async (file) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj);
     }
-    
-    // 文件大小限制 (10MB)
-    const isLt10M = file.size / 1024 / 1024 < 10;
-    if (!isLt10M) {
-      message.error('文件大小不能超过10MB!');
-      return Upload.LIST_IGNORE;
-    }
-    
-    // 设置文件和类型
-    setMediaFiles([file]);
-    setMediaType(isImage ? 'image' : 'video');
-    
-    // 创建预览URL
-    const previewUrl = URL.createObjectURL(file);
-    setMediaPreview(previewUrl);
-    
-    // 阻止默认上传行为
-    return false;
+    setPreviewImage(file.url || file.preview);
+    setPreviewOpen(true);
+    setPreviewTitle(file.name || file.url.substring(file.url.lastIndexOf('/') + 1));
   };
-  
-  // 移除媒体文件
-  const handleRemoveMedia = () => {
-    setMediaFiles([]);
-    setMediaType(null);
-    if (mediaPreview) {
-      URL.revokeObjectURL(mediaPreview);
-      setMediaPreview(null);
-    }
-  };
-  
-  // 修改后的测试函数
-  const handleTest = async () => {
-    if (!testInput.trim() && mediaFiles.length === 0) {
-      message.warning('请输入测试内容或上传媒体文件');
+
+  // 添加文件列表更改处理函数
+  const handleFileChange = ({ fileList: newFileList }) => {
+    // 限制只能上传一个文件
+    if (newFileList.length > 1) {
+      message.warning('只能上传一个文件');
       return;
     }
+    setFileList(newFileList);
+  };
+
+  // 添加文件删除处理函数
+  const handleFileRemove = () => {
+    setFileList([]);
+  };
+
+  // 文件转Base64辅助函数
+  const getBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  // 修改模型类型切换处理函数
+  const handleModelTypeChange = (value) => {
+    form.setFieldsValue({ model_type: value });
+    // 当切换到非多模态模型时，清空已上传的文件
+    if (value !== 'multimodal') {
+      setFileList([]);
+    }
+  };
   
+  // 修改handleTest函数支持多模态测试
+  const handleTest = async () => {
     const currentFormValues = form.getFieldsValue();
     const accessUrl = currentFormValues.access_url || model?.access_url;
     const accessKey = currentFormValues.access_key || model?.access_key;
     const modelName = currentFormValues.model_name || model?.model_name;
     const modelType = currentFormValues.model_type || model?.model_type;
-  
+
     if (!accessUrl || !accessKey || !modelName) {
       const missingFields = [];
       if (!accessUrl) missingFields.push('API URL');
@@ -361,20 +369,29 @@ const ModelDetail = () => {
       setTestOutput(`配置错误: ${errorMsg}`);
       return;
     }
-  
+
+    // 修改：支持多模态模型的测试
     if (modelType !== 'text' && modelType !== 'multimodal') {
       const warningMsg = '当前仅支持文本模型和多模态模型的测试';
       message.warning(warningMsg);
       setTestOutput(`不支持的模型类型: ${modelType}\n${warningMsg}`);
       return;
     }
-  
+    
+    // 检查多模态模型是否上传了文件
+    if (modelType === 'multimodal' && fileList.length === 0 && testInput.trim() === '') {
+      const warningMsg = '多模态模型测试需要提供文本输入或上传图片/视频文件';
+      message.warning(warningMsg);
+      setTestOutput(`测试错误: ${warningMsg}`);
+      return;
+    }
+
     setTesting(true);
     setIsStreaming(true);
     setTestOutput('');
-  
+
     try {
-      // 构建messages数组
+      // 构建messages数组，如果有system-prompt则添加
       const messages = [];
       
       // 添加system消息（如果有）
@@ -385,51 +402,52 @@ const ModelDetail = () => {
         });
       }
       
-      // 如果媒体文件，构建多模态消息
-      if (mediaFiles.length > 0 && mediaType) {
-        const file = mediaFiles[0];
-        const reader = new FileReader();
+      // 构建消息内容
+      if (modelType === 'multimodal' && fileList.length > 0) {
+        // 多模态消息
+        const file = fileList[0].originFileObj;
+        const base64Data = await getBase64(file);
         
-        reader.onload = async (e) => {
-          try {
-            const base64Data = e.target.result.split(',')[1]; // 移除data:image/jpeg;base64,前缀
-            
-            // 按照OpenAI的multimodal API格式构建内容
-            const content = [
-              { type: "text", text: testInput || "请描述这个图像/视频" },
-              {
-                type: mediaType,
-                [mediaType === 'image' ? 'image_url' : 'video_url']: {
-                  url: `data:${file.type};base64,${base64Data}`
-                }
-              }
-            ];
-            
-            messages.push({
-              role: 'user',
-              content: content
-            });
-            
-            await sendRequest(messages, accessUrl, accessKey, modelName);
-          } catch (error) {
-            handleTestError(error);
-          }
-        };
+        const content = [
+          { type: "text", text: testInput || "请描述这个图像/视频" }
+        ];
         
-        reader.onerror = () => {
-          handleTestError(new Error('文件读取失败'));
-        };
+        if (file.type.startsWith('image/')) {
+          content.push({
+            type: "image_url",
+            image_url: {
+              url: base64Data
+            }
+          });
+        } else if (file.type.startsWith('video/')) {
+          content.push({
+            type: "video_url",
+            video_url: {
+              url: base64Data
+            }
+          });
+        }
         
-        reader.readAsDataURL(file);
+        messages.push({
+          role: 'user',
+          content: content
+        });
       } else {
         // 纯文本消息
+        if (!testInput.trim()) {
+          message.warning('请输入测试内容');
+          setTesting(false);
+          setIsStreaming(false);
+          return;
+        }
+        
         messages.push({
           role: 'user',
           content: testInput
         });
-        
-        await sendRequest(messages, accessUrl, accessKey, modelName);
       }
+      
+      await sendRequest(messages, accessUrl, accessKey, modelName);
     } catch (error) {
       handleTestError(error);
     }
@@ -758,8 +776,8 @@ const ModelDetail = () => {
                 <Col xs={24} sm={12}>
                   <Form.Item
                     name="access_url"
-                    label=
-                    rules={[{ required: true, message: '请输入API地址' }]}
+                    label="API地址"
+                    rules={
                   >
                     <Input 
                       placeholder="https://api.example.com/v1/chat" 

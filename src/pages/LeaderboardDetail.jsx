@@ -38,6 +38,8 @@ const { Option } = Select;
 const { TextArea } = Input;
 const { Dragger } = Upload;
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 const LeaderboardDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -75,7 +77,7 @@ const LeaderboardDetail = () => {
   const fetchLeaderboard = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/leaderboards/${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/leaderboards/${id}`);
       if (response.ok) {
         const data = await response.json();
         setLeaderboard(data);
@@ -94,7 +96,7 @@ const LeaderboardDetail = () => {
   const fetchResults = async () => {
     setResultsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/leaderboards/${id}/results`);
+      const response = await fetch(`${API_BASE_URL}/api/leaderboards/${id}/results`);
       if (response.ok) {
         const data = await response.json();
         setResults(data);
@@ -110,8 +112,8 @@ const LeaderboardDetail = () => {
     setSaving(true);
     try {
       const url = isNew 
-        ? 'http://localhost:3001/api/leaderboards'
-        : `http://localhost:3001/api/leaderboards/${id}`;
+        ? `${API_BASE_URL}/api/leaderboards`
+        : `${API_BASE_URL}/api/leaderboards/${id}`;
       
       const response = await fetch(url, {
         method: isNew ? 'POST' : 'PUT',
@@ -145,7 +147,7 @@ const LeaderboardDetail = () => {
 
   const handleAddResult = async (values) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/leaderboards/${id}/results`, {
+      const response = await fetch(`${API_BASE_URL}/api/leaderboards/${id}/results`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -170,7 +172,7 @@ const LeaderboardDetail = () => {
 
   const handleExport = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/leaderboards/${id}/export`, {
+      const response = await fetch(`${API_BASE_URL}/api/leaderboards/${id}/export`, {
         headers: {
           'Authorization': `Bearer ${getToken()}`
         }
@@ -197,7 +199,7 @@ const LeaderboardDetail = () => {
 
   const uploadProps = {
     name: 'file',
-    action: `http://localhost:3001/api/leaderboards/${id}/import`,
+    action: `${API_BASE_URL}/api/leaderboards/${id}/import`,
     headers: {
       'Authorization': `Bearer ${getToken()}`
     },
@@ -330,7 +332,7 @@ const LeaderboardDetail = () => {
             onClick={async () => {
               try {
                 const response = await fetch(
-                  `http://localhost:3001/api/leaderboards/${id}/results/${record.id}`,
+                  `${API_BASE_URL}/api/leaderboards/${id}/results/${record.id}`,
                   {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${getToken()}` }

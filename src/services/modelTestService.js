@@ -203,20 +203,21 @@ export const handleMultimodalTest = async (textInput, systemPrompt, file, mediaT
       reader.readAsDataURL(file);
     });
     
-    // 按照OpenAI的multimodal API格式构建内容
-    const content = [
-      { type: "text", text: textInput || "请描述这个图像/视频" },
-      {
-        type: mediaType,
-        [mediaType === 'image' ? 'image_url' : 'video_url']: {
-          url: `data:${file.type};base64,${base64Data}`
-        }
-      }
-    ];
+    // 构建适合阿里云Qwen模型的多模态内容
+    // 注意：根据阿里云API文档，这里可能需要调整格式
+    const content = textInput || "请描述这个图像";
+    
+    // 添加图片信息
+    const imageContent = {
+      type: "image",
+      data: base64Data,
+      format: file.type.split('/')[1]  // 获取图片格式如jpeg, png等
+    };
     
     messages.push({
       role: 'user',
-      content: content
+      content: content,
+      images: [imageContent]  // 阿里云模型可能使用单独的images字段
     });
     
     return await sendChatRequest(
@@ -228,7 +229,14 @@ export const handleMultimodalTest = async (textInput, systemPrompt, file, mediaT
   } catch (error) {
     console.error('处理多模态测试失败:', error);
     setIsStreaming(false);
-    setTestOutput(`## 文件处理错误\n\n**错误信息:** ${error.message}\n\n**可能原因:**\n- 文件格式不支持\n- 文件过大\n- 浏览器限制`);
+    setTestOutput(`## 文件处理错误
+
+**错误信息:** ${error.message}
+
+**可能原因:**
+- 文件格式不支持
+- 文件过大
+- 浏览器限制`);
     return '';
   }
 };

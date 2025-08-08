@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3001;
 // 中间件
 app.use(helmet());
 app.use(cors({
+  // origin: true,
   origin: [
     'http://localhost:3001', 
     'http://localhost:5173', 

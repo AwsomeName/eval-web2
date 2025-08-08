@@ -29,6 +29,8 @@ const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 const AgentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -52,7 +54,7 @@ const AgentDetail = () => {
   const fetchAgent = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/agents/${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/agents/${id}`);
       if (response.ok) {
         const data = await response.json();
         setAgent(data);
@@ -72,8 +74,8 @@ const AgentDetail = () => {
     setSaving(true);
     try {
       const url = isNew 
-        ? 'http://localhost:3001/api/agents'
-        : `http://localhost:3001/api/agents/${id}`;
+        ? `${API_BASE_URL}/api/agents`
+        : `${API_BASE_URL}/api/agents/${id}`;
       
       const response = await fetch(url, {
         method: isNew ? 'POST' : 'PUT',

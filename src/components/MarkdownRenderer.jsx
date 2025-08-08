@@ -1,14 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 // 使用ES Module导入
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Typography } from 'antd';
+import { Typography, Modal } from 'antd';
 
 const { Text } = Typography;
 
 const MarkdownRenderer = ({ content, isError = false, isStreaming = false, isCard = false }) => {
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [modalImageSrc, setModalImageSrc] = useState('');
+  const [modalImageAlt, setModalImageAlt] = useState('');
+
+  const handleImageClick = (src, alt) => {
+    setModalImageSrc(src);
+    setModalImageAlt(alt || '生成的图像');
+    setImageModalOpen(true);
+  };
   // 如果是错误信息，直接显示为纯文本
   if (isError) {
     return (
@@ -195,11 +204,60 @@ const MarkdownRenderer = ({ content, isError = false, isStreaming = false, isCar
             }}>
               {children}
             </td>
+          ),
+          img: ({ src, alt, ...props }) => (
+            <img
+              src={src}
+              alt={alt}
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
+              onClick={() => handleImageClick(src, alt)}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'scale(1.02)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'scale(1)';
+              }}
+              {...props}
+            />
           )
         }}
       >
         {content}
       </ReactMarkdown>
+      
+      <Modal
+        open={imageModalOpen}
+        title={modalImageAlt}
+        footer={null}
+        onCancel={() => setImageModalOpen(false)}
+        width="90vw"
+        style={{ top: 20 }}
+        bodyStyle={{
+          padding: '20px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '60vh'
+        }}
+      >
+        <img
+          src={modalImageSrc}
+          alt={modalImageAlt}
+          style={{
+            maxWidth: '100%',
+            maxHeight: '80vh',
+            objectFit: 'contain',
+            borderRadius: '8px'
+          }}
+        />
+      </Modal>
     </div>
   );
 };

@@ -55,7 +55,7 @@ const DatasetDetail = () => {
   const fetchDataset = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/datasets/${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/datasets/${id}`);
       if (response.ok) {
         const data = await response.json();
         setDataset(data);
@@ -107,8 +107,8 @@ const DatasetDetail = () => {
     setSaving(true);
     try {
       const url = isNew 
-        ? 'http://localhost:3001/api/datasets'
-        : `http://localhost:3001/api/datasets/${id}`;
+        ? `${API_BASE_URL}/api/datasets`
+        : `${API_BASE_URL}/api/datasets/${id}`;
       
       const response = await fetch(url, {
         method: isNew ? 'POST' : 'PUT',

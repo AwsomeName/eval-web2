@@ -20,15 +20,40 @@ const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 
-// 预定义的API URL选项
-const predefinedApiUrls = [
-  { label: 'OpenAI', value: 'https://api.openai.com/v1' },
-  { label: 'Azure OpenAI', value: 'https://your-resource-name.openai.azure.com' },
-  { label: 'Anthropic', value: 'https://api.anthropic.com' },
-  { label: '百度文心', value: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop' },
-  { label: '智谱AI', value: 'https://open.bigmodel.cn/api/paas/v3' },
-  { label: '阿里云', value: 'https://dashscope.aliyuncs.com/api/v1' },
-];
+// 根据模型类型获取预定义的API URL选项
+const getPredefinedApiUrls = (modelType) => {
+  const baseUrls = [];
+  
+  // 根据模型类型调整各个API提供商的URL
+  if (modelType === 'image') {
+    // 图像生成模型的专用端点
+    baseUrls.push(
+      { label: 'OpenAI', value: 'https://api.openai.com/v1' },
+      { label: 'Azure OpenAI', value: 'https://your-resource-name.openai.azure.com' },
+      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1/images/generations' },
+      { label: '智谱AI', value: 'https://open.bigmodel.cn/api/paas/v4' },
+      { label: '阿里云', value: 'https://dashscope.aliyuncs.com/api/v1' },
+      { label: '青云聚合', value: 'https://api.qingyuntop.top/v1/images/generations' }
+    );
+  } else {
+    // 其他模型类型的通用端点
+    baseUrls.push(
+      { label: 'OpenAI', value: 'https://api.openai.com/v1' },
+      { label: 'Azure OpenAI', value: 'https://your-resource-name.openai.azure.com' },
+      { label: 'Anthropic', value: 'https://api.anthropic.com' },
+      { label: '百度文心', value: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop' },
+      { label: '智谱AI', value: 'https://open.bigmodel.cn/api/paas/v3' },
+      { label: '阿里云', value: 'https://dashscope.aliyuncs.com/api/v1' },
+      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1' },
+      { label: '青云聚合', value: 'https://api.qingyuntop.top/v1' }
+    );
+  }
+  
+  return baseUrls;
+};
+
+// 默认的API URL选项（用于初始化）
+const predefinedApiUrls = getPredefinedApiUrls('text');
 
 const ModelDetail = () => {
   const { id } = useParams();
@@ -50,6 +75,8 @@ const ModelDetail = () => {
   const [descriptionPreviewMode, setDescriptionPreviewMode] = useState(true);
   const [selectedApiUrl, setSelectedApiUrl] = useState('');
   const [customApiUrl, setCustomApiUrl] = useState(true);
+  const [currentModelType, setCurrentModelType] = useState('text');
+  const [currentPredefinedApiUrls, setCurrentPredefinedApiUrls] = useState(predefinedApiUrls);
   
   // 媒体相关状态变量
   const [fileList, setFileList] = useState([]);
@@ -85,6 +112,22 @@ const ModelDetail = () => {
       revokePreviewUrl(previewImage);
       setPreviewImage('');
     }
+    
+    // 更新当前模型类型
+    setCurrentModelType(value);
+    
+    // 根据新的模型类型更新API URL选项
+    const newApiUrls = getPredefinedApiUrls(value);
+    setCurrentPredefinedApiUrls(newApiUrls);
+    
+    // 如果当前选择的是硅基流动，需要更新URL
+    if (selectedApiUrl && selectedApiUrl.includes('siliconflow.cn')) {
+      const siliconFlowOption = newApiUrls.find(url => url.label === '硅基流动');
+      if (siliconFlowOption) {
+        setSelectedApiUrl(siliconFlowOption.value);
+        form.setFieldsValue({ access_url: siliconFlowOption.value });
+      }
+    }
   };
 
   // 获取模型信息
@@ -95,8 +138,14 @@ const ModelDetail = () => {
       setModel(data);
       form.setFieldsValue(data);
       
+      // 设置当前模型类型并更新API URL选项
+      const modelType = data.model_type || 'text';
+      setCurrentModelType(modelType);
+      const apiUrls = getPredefinedApiUrls(modelType);
+      setCurrentPredefinedApiUrls(apiUrls);
+      
       // 设置 API URL 类型
-      const predefinedUrl = predefinedApiUrls.find(item => item.value === data.access_url);
+      const predefinedUrl = apiUrls.find(item => item.value === data.access_url);
       if (predefinedUrl) {
         setSelectedApiUrl(data.access_url);
         setCustomApiUrl(false);
@@ -141,7 +190,11 @@ const ModelDetail = () => {
     }
   
     const currentFormValues = form.getFieldsValue();
-    const accessUrl = currentFormValues.access_url || model?.access_url;
+    let accessUrl = currentFormValues.access_url || model?.access_url;
+    // 清理URL中的特殊字符（反引号、单引号、双引号、空格等）
+    if (accessUrl) {
+      accessUrl = accessUrl.trim().replace(/[`'"\s]/g, '');
+    }
     const accessKey = currentFormValues.access_key || model?.access_key;
     const modelName = currentFormValues.model_name || model?.model_name;
     const modelType = currentFormValues.model_type || model?.model_type;
@@ -255,7 +308,7 @@ const ModelDetail = () => {
       <Row gutter={[24, 24]}>
         {/* 模型测试 */}
         {!isNew && (
-          <Col xs={24} lg={8}>
+          <Col xs={24} lg={10}>
             <Card title="模型测试" style={{ height: 'fit-content' }} headStyle={{ textAlign: 'left' }}>
               <div style={{ marginBottom: '16px', textAlign: 'left' }}>
                 <Text strong>System Prompt：</Text>
@@ -344,7 +397,7 @@ const ModelDetail = () => {
         )}
 
         {/* 模型信息表单 */}
-        <Col xs={24} lg={!isNew ? 16 : 24}>
+        <Col xs={24} lg={!isNew ? 14 : 24}>
           <Card 
             title="模型信息"
             headStyle={{ textAlign: 'left' }}
@@ -446,7 +499,7 @@ const ModelDetail = () => {
                       style={{ width: '100%' }}
                       placeholder="选择API类型或自定义"
                     >
-                      {predefinedApiUrls.map((item) => (
+                      {currentPredefinedApiUrls.map((item) => (
                         <Option key={item.value} value={item.value}>
                           {item.label}
                         </Option>
@@ -466,7 +519,7 @@ const ModelDetail = () => {
                   >
                     <Input 
                       placeholder="请输入API URL"
-                      disabled={!customApiUrl}
+                      disabled={!customApiUrl || (!editing && !isNew)}
                     />
                   </Form.Item>
                 </Col>

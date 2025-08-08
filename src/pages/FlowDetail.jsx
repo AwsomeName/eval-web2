@@ -48,10 +48,11 @@ const FlowDetail = () => {
     }
   }, [id]);
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
   const fetchFlow = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/flows/${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/flows/${id}`);
       if (response.ok) {
         const data = await response.json();
         setFlow(data);
@@ -71,8 +72,8 @@ const FlowDetail = () => {
     setSaving(true);
     try {
       const url = isNew 
-        ? 'http://localhost:3001/api/flows'
-        : `http://localhost:3001/api/flows/${id}`;
+        ? `${API_BASE_URL}/api/flows`
+        : `${API_BASE_URL}/api/flows/${id}`;
       
       const response = await fetch(url, {
         method: isNew ? 'POST' : 'PUT',

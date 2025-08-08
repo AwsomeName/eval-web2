@@ -20,13 +20,14 @@ export const handleImageGenerationTest = async (
   setTestOutput('正在连接API并生成图像...');
   
   try {
-    // 构建请求体，基于常见的图像生成API格式
+    // 构建请求体，支持SiliconFlow API格式
     const requestBody = {
       model: modelName,
       prompt: prompt,
-      n: 1,  // 生成一张图片
-      size: '1024x1024',  // 默认尺寸
-      response_format: 'b64_json'  // 请求base64格式便于直接显示
+      image_size: '1024x1024',  // SiliconFlow使用image_size而不是size
+      batch_size: 1,  // SiliconFlow参数
+      num_inference_steps: 20,  // SiliconFlow参数
+      guidance_scale: 7.5  // SiliconFlow参数
     };
     
     // 如果有系统提示，部分API支持
@@ -34,15 +35,21 @@ export const handleImageGenerationTest = async (
       requestBody.system = systemPrompt.trim();
     }
     
-    // 发送请求到图像生成API
-    const requestUrl = accessUrl + '/images/generations';
-    const response = await fetch(requestUrl, {
+    // 通过后台代理发送请求
+    const response = await fetch('/api/proxy/image/generation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessKey}`
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        modelInfo: {
+          accessUrl,
+          accessKey,
+          modelName
+        },
+        requestBody
+      })
     });
     
     if (!response.ok) {
@@ -64,17 +71,48 @@ export const handleImageGenerationTest = async (
     
     const result = await response.json();
     
-    // 提取生成的图像（base64格式）
-    const generatedImageBase64 = result.data?.[0]?.b64_json;
-    if (!generatedImageBase64) {
+    // 提取生成的图像，支持不同API的响应格式
+    let generatedImageBase64;
+    let imageUrl;
+    
+    if (accessUrl.includes('siliconflow.cn')) {
+      // SiliconFlow API响应格式
+      if (result.images && result.images.length > 0) {
+        // 如果返回的是base64格式
+        if (result.images[0].b64_json) {
+          generatedImageBase64 = result.images[0].b64_json;
+        } else if (result.images[0].url) {
+          // 如果返回的是URL格式
+          imageUrl = result.images[0].url;
+        }
+      }
+    } else {
+      // OpenAI格式的响应
+      if (result.data && result.data.length > 0) {
+        if (result.data[0].b64_json) {
+          generatedImageBase64 = result.data[0].b64_json;
+        } else if (result.data[0].url) {
+          imageUrl = result.data[0].url;
+        }
+      }
+    }
+    
+    if (!generatedImageBase64 && !imageUrl) {
       setIsStreaming(false);
-      setTestOutput('## 图像生成失败\n\n未能从API响应中获取图像数据，请检查API响应格式。');
+      setTestOutput(`## 图像生成失败\n\n未能从API响应中获取图像数据，请检查API响应格式。\n\n**API响应:** \`\`\`json\n${JSON.stringify(result, null, 2)}\n\`\`\``);
       message.error('未能获取生成的图像数据');
       return;
     }
     
-    // 构建markdown格式的图像显示（使用base64内嵌图像）
-    const imageMarkdown = `## 生成结果\n\n![生成的图像](data:image/png;base64,${generatedImageBase64})\n\n**提示词:** ${prompt}`;
+    // 构建markdown格式的图像显示
+    let imageMarkdown;
+    if (generatedImageBase64) {
+      // 使用base64内嵌图像
+      imageMarkdown = `## 生成结果\n\n![生成的图像](data:image/png;base64,${generatedImageBase64})\n\n**提示词:** ${prompt}`;
+    } else if (imageUrl) {
+      // 使用图像URL
+      imageMarkdown = `## 生成结果\n\n![生成的图像](${imageUrl})\n\n**提示词:** ${prompt}`;
+    }
     
     setTestOutput(imageMarkdown);
     setIsStreaming(false);
