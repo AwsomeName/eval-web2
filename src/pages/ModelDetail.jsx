@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { modelsAPI } from '../utils/api';
 import { validateMediaFile, getMediaType, createPreviewUrl, revokePreviewUrl } from '../utils/mediaUtils';
 import { handleTextTest, handleMultimodalTest } from '../services/modelTestService';
+import { handleASRTest, validateAudioFile } from '../services/asrTestService';
+import { handleTTSTest, validateTTSText } from '../services/ttsService';
 // 注意：handleImageGenerationTest使用动态导入，无需在这里添加静态导入
 import {
   Form, Input, Select, Button, Card, Row, Col, Typography, 
@@ -30,10 +32,31 @@ const getPredefinedApiUrls = (modelType) => {
     baseUrls.push(
       { label: 'OpenAI', value: 'https://api.openai.com/v1' },
       { label: 'Azure OpenAI', value: 'https://your-resource-name.openai.azure.com' },
-      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1/images/generations' },
+      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1' },
       { label: '智谱AI', value: 'https://open.bigmodel.cn/api/paas/v4' },
       { label: '阿里云', value: 'https://dashscope.aliyuncs.com/api/v1' },
       { label: '青云聚合', value: 'https://api.qingyuntop.top/v1/images/generations' }
+    );
+  } else if (modelType === 'video') {
+    // 视频生成模型的专用端点
+    baseUrls.push(
+      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1' },
+      { label: 'OpenAI', value: 'https://api.openai.com/v1' },
+      { label: 'Azure OpenAI', value: 'https://your-resource-name.openai.azure.com' },
+      { label: '智谱AI', value: 'https://open.bigmodel.cn/api/paas/v4' },
+      { label: '阿里云', value: 'https://dashscope.aliyuncs.com/api/v1' }
+    );
+  } else if (modelType === 'asr') {
+    // ASR语音识别模型的专用端点
+    baseUrls.push(
+      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1/audio/transcriptions' },
+      { label: 'OpenAI', value: 'https://api.openai.com/v1/audio/transcriptions' }
+    );
+  } else if (modelType === 'tts') {
+    // TTS语音合成模型的专用端点
+    baseUrls.push(
+      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1/audio/speech' },
+      { label: 'OpenAI', value: 'https://api.openai.com/v1/audio/speech' }
     );
   } else {
     // 其他模型类型的通用端点
@@ -70,6 +93,8 @@ const ModelDetail = () => {
   const [testOutput, setTestOutput] = useState('');
   const [testing, setTesting] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  // 添加缺失的状态变量
+  const [abortController, setAbortController] = useState(null);
   const [systemPrompt, setSystemPrompt] = useState('');
   const [examplePreviewMode, setExamplePreviewMode] = useState(false);
   const [descriptionPreviewMode, setDescriptionPreviewMode] = useState(true);
@@ -128,6 +153,10 @@ const ModelDetail = () => {
         form.setFieldsValue({ access_url: siliconFlowOption.value });
       }
     }
+    
+    // 清空测试输入和输出
+    setTestInput('');
+    setTestOutput('');
   };
 
   // 获取模型信息
@@ -184,20 +213,31 @@ const ModelDetail = () => {
 
   // 处理测试请求
   const handleTest = async () => {
-    if (!testInput.trim() && fileList.length === 0) {
+    const currentFormValues = form.getFieldsValue();
+    const modelType = currentFormValues.model_type || model?.model_type;
+    
+    // 根据模型类型进行不同的验证
+    if (modelType === 'asr') {
+      if (fileList.length === 0) {
+        message.warning('ASR模型测试需要上传音频文件');
+        return;
+      }
+    } else if (!testInput.trim() && fileList.length === 0) {
       message.warning('请输入测试内容或上传媒体文件');
       return;
     }
   
-    const currentFormValues = form.getFieldsValue();
     let accessUrl = currentFormValues.access_url || model?.access_url;
     // 清理URL中的特殊字符（反引号、单引号、双引号、空格等）
     if (accessUrl) {
       accessUrl = accessUrl.trim().replace(/[`'"\s]/g, '');
     }
-    const accessKey = currentFormValues.access_key || model?.access_key;
+    let accessKey = currentFormValues.access_key || model?.access_key;
+    // 清理API Key中的特殊字符（换行符、回车符、制表符、空格等）
+    if (accessKey) {
+      accessKey = accessKey.trim().replace(/[\r\n\t\s]/g, '');
+    }
     const modelName = currentFormValues.model_name || model?.model_name;
-    const modelType = currentFormValues.model_type || model?.model_type;
   
     if (!accessUrl || !accessKey || !modelName) {
       const missingFields = [];
@@ -214,7 +254,11 @@ const ModelDetail = () => {
     setTesting(true);
     setIsStreaming(true);
     setTestOutput('');
-  
+    
+    // 创建一个新的 AbortController 实例用于请求取消
+    const controller = new AbortController();
+    setAbortController(controller);
+    
     try {
       // 构建模型信息对象
       const modelInfo = {
@@ -231,7 +275,53 @@ const ModelDetail = () => {
           systemPrompt,
           modelInfo,
           setTestOutput,
-          setIsStreaming
+          setIsStreaming,
+          controller.signal // 传递 signal
+        );
+      } else if (modelType === 'video') {
+        // 视频生成模型测试
+        const { handleVideoGenerationTest } = await import('../services/videoGenerationService');
+        await handleVideoGenerationTest(
+          testInput,
+          systemPrompt,
+          modelInfo,
+          setTestOutput,
+          setIsStreaming,
+          controller.signal // 传递 signal
+        );
+      } else if (modelType === 'asr') {
+        // ASR模型测试
+        if (fileList.length === 0) {
+          message.warning('ASR模型测试需要上传音频文件');
+          return;
+        }
+        const audioFile = fileList[0].originFileObj;
+        await handleASRTest(
+          audioFile,
+          modelInfo,
+          setTestOutput,
+          setIsStreaming,
+          controller.signal // 传递 signal
+        );
+      } else if (modelType === 'tts') {
+        // TTS语音合成模型测试
+        if (!testInput || !testInput.trim()) {
+          message.warning('TTS模型测试需要输入文本内容');
+          return;
+        }
+        
+        // 验证文本输入
+        const validation = validateTTSText(testInput, true);
+        if (!validation.isValid) {
+          return;
+        }
+        
+        await handleTTSTest(
+          testInput,
+          modelInfo,
+          setTestOutput,
+          setIsStreaming,
+          controller.signal // 传递 signal
         );
       } else if (fileList.length > 0 && modelType === 'multimodal') {
         // 多模态测试
@@ -244,7 +334,8 @@ const ModelDetail = () => {
           mediaType, 
           modelInfo, 
           setTestOutput, 
-          setIsStreaming
+          setIsStreaming,
+          controller.signal // 传递 signal
         );
       } else {
         // 文本测试
@@ -253,16 +344,32 @@ const ModelDetail = () => {
           systemPrompt, 
           modelInfo, 
           setTestOutput, 
-          setIsStreaming
+          setIsStreaming,
+          controller.signal // 传递 signal
         );
       }
     } catch (error) {
-      console.error('测试失败:', error);
-      setIsStreaming(false);
-      setTestOutput(`## 网络错误\n\n**错误信息:** ${error.message}\n\n**可能原因:**\n- 网络连接问题\n- CORS跨域限制\n- API服务不可用\n- 请求超时`);
-      message.error(`网络错误: ${error.message}`);
+      if (error.name === 'AbortError') {
+        setTestOutput(prev => prev + '\n\n**请求已手动停止**');
+        message.info('请求已手动停止');
+      } else {
+        console.error('测试失败:', error);
+        setIsStreaming(false);
+        setTestOutput(`## 网络错误\n\n**错误信息:** ${error.message}\n\n**可能原因:**\n- 网络连接问题\n- CORS跨域限制\n- API服务不可用\n- 请求超时`);
+        message.error(`网络错误: ${error.message}`);
+      }
     } finally {
       setTesting(false);
+      setAbortController(null);
+    }
+  };
+  
+  // 处理停止请求
+  const handleStopRequest = () => {
+    if (abortController) {
+      abortController.abort();
+      setIsStreaming(false);
+      message.info('正在停止请求...');
     }
   };
 
@@ -323,7 +430,11 @@ const ModelDetail = () => {
                 <Text strong>测试输入：</Text>
                 <TextArea
                   rows={4}
-                  placeholder="请输入测试内容..."
+                  placeholder={
+                    form.getFieldValue('model_type') === 'asr' 
+                      ? "ASR模型测试主要依赖音频文件，此处可留空..." 
+                      : "请输入测试内容..."
+                  }
                   value={testInput}
                   onChange={(e) => setTestInput(e.target.value)}
                   style={{ marginTop: '8px' }}
@@ -370,6 +481,35 @@ const ModelDetail = () => {
                     </div>
                   </div>
                 )}
+                
+                {/* 添加ASR音频文件上传区域 */}
+                {form.getFieldValue('model_type') === 'asr' && (
+                  <div style={{ marginTop: '16px' }}>
+                    <Text strong>音频文件上传：</Text>
+                    <div style={{ marginTop: '8px' }}>
+                      <Upload
+                        listType="text"
+                        fileList={fileList}
+                        onChange={handleFileChange}
+                        beforeUpload={(file) => {
+                          const isValid = validateAudioFile(file);
+                          return isValid ? false : Upload.LIST_IGNORE;
+                        }}
+                        maxCount={1}
+                        accept="audio/*"
+                      >
+                        {fileList.length >= 1 ? null : (
+                          <Button icon={<PlusOutlined />}>
+                            上传音频文件
+                          </Button>
+                        )}
+                      </Upload>
+                      <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
+                        支持格式：MP3、WAV、FLAC、AAC、OGG、WebM、M4A（最大25MB）
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               
               <Button 
@@ -386,9 +526,10 @@ const ModelDetail = () => {
                 <div style={{ marginTop: '8px' }}>
                   <TestResultDisplay 
                     output={testOutput}
-                    isLoading={testing}
+                    isLoading={testing && !testOutput}
                     isStreaming={isStreaming}
                     onClear={() => setTestOutput('')}
+                    onStop={handleStopRequest} // 添加停止回调
                   />
                 </div>
               </div>

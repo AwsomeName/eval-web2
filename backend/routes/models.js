@@ -123,7 +123,7 @@ router.post('/', authenticateToken, async (req, res) => {
         // 更详细的调试日志
         console.log('提交的model_type值(规范化后):', normalizedModelType);
         console.log('插入语句:', `INSERT INTO models (name, description, publisher, model_name, model_type, access_url, access_key, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`);
-        console.log('插入参数:', [name, description, publisher, model_name, normalizedModelType, api_url, api_key, req.user.id]);
+        console.log('插入参数:', [name, description, publisher, model_name, normalizedModelType, access_url, access_key, req.user.id]);
         
         const result = await pool.query(
             `INSERT INTO models (name, description, publisher, model_name, model_type, access_url, access_key, created_by)

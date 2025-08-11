@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Typography, Alert, Button, Space } from 'antd';
-import { CopyOutlined, ClearOutlined, DownloadOutlined } from '@ant-design/icons';
+import { CopyOutlined, ClearOutlined, DownloadOutlined, StopOutlined } from '@ant-design/icons';
 import MarkdownRenderer from './MarkdownRenderer';
 
 const { Text } = Typography;
@@ -9,7 +9,8 @@ const TestResultDisplay = ({
   output, 
   isLoading, 
   isStreaming, 
-  onClear 
+  onClear,
+  onStop  // 新增停止回调函数
 }) => {
   const [isError, setIsError] = useState(false);
   const [statusInfo, setStatusInfo] = useState('');
@@ -125,6 +126,17 @@ const TestResultDisplay = ({
       }}>
         <Text strong style={{ textAlign: 'left' }}>输出结果：</Text>
         <Space>
+          {isStreaming && onStop && (
+            <Button 
+              size="small" 
+              danger
+              icon={<StopOutlined />} 
+              onClick={onStop}
+              title="停止响应"
+            >
+              停止
+            </Button>
+          )}
           {(actualContent || output) && (
             <>
               <Button 

@@ -8,14 +8,13 @@ import { message } from 'antd';
  * @param {Object} modelInfo - 模型信息对象，包含accessUrl、accessKey、modelName等
  * @param {Function} setTestOutput - 设置测试输出的回调函数
  * @param {Function} setIsStreaming - 设置是否正在流式响应的回调函数
+ * @param {AbortSignal} signal - 用于取消请求的信号
  * @returns {Promise<string>} - 累积的响应内容
  */
-export const sendChatRequest = async (messages, modelInfo, setTestOutput, setIsStreaming) => {
+export const sendChatRequest = async (messages, modelInfo, setTestOutput, setIsStreaming, signal) => {
   const { accessUrl, accessKey, modelName } = modelInfo;
   
-  setTestOutput(`正在连接API...
-
-`);
+  setTestOutput(`正在连接API...\n\n`);
 
   try {
     // 发送模型信息给后端，让后端进行流式请求
@@ -37,7 +36,8 @@ export const sendChatRequest = async (messages, modelInfo, setTestOutput, setIsS
           temperature: 0.7,
           max_tokens: 1000
         }
-      })
+      }),
+      signal // 添加 AbortSignal
     });
 
     if (!response.ok) {
@@ -72,43 +72,50 @@ export const sendChatRequest = async (messages, modelInfo, setTestOutput, setIsS
     const decoder = new TextDecoder();
     let accumulatedContent = '';
 
-    setTestOutput(`## 测试结果
+    setTestOutput(`## 测试结果\n\n`);
 
-`);
-
-    while (true) {
-      const { done, value } = await reader.read();
-      
-      if (done) {
-        setIsStreaming(false);
-        break;
-      }
-      
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split(`\n`);
-      
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6).trim();
-          
-          if (data === '[DONE]') {
-            setIsStreaming(false);
-            continue;
-          }
-          
-          try {
-            const parsed = JSON.parse(data);
-            const content = parsed.choices?.[0]?.delta?.content;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          setIsStreaming(false);
+          break;
+        }
+        
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split(`\n`);
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6).trim();
             
-            if (content) {
-              accumulatedContent += content;
-              setTestOutput(accumulatedContent);
+            if (data === '[DONE]') {
+              setIsStreaming(false);
+              continue;
             }
-          } catch (e) {
-            console.warn('JSON解析错误:', e.message);
+            
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices?.[0]?.delta?.content;
+              
+              if (content) {
+                accumulatedContent += content;
+                setTestOutput(accumulatedContent);
+              }
+            } catch (e) {
+              console.warn('JSON解析错误:', e.message);
+            }
           }
         }
       }
+    } catch (error) {
+      // 检查是否是取消请求导致的错误
+      if (error.name === 'AbortError') {
+        throw error; // 重新抛出取消错误，让调用者处理
+      }
+      console.error('读取流错误:', error);
+      throw error;
     }
 
     if (!accumulatedContent) {
@@ -120,17 +127,13 @@ export const sendChatRequest = async (messages, modelInfo, setTestOutput, setIsS
 
     return accumulatedContent;
   } catch (error) {
+    // 检查是否是取消请求导致的错误
+    if (error.name === 'AbortError') {
+      throw error; // 重新抛出取消错误，让调用者处理
+    }
     console.error('测试失败:', error);
     setIsStreaming(false);
-    setTestOutput(`## 网络错误
-
-**错误信息:** ${error.message}
-
-**可能原因:**
-- 网络连接问题
-- CORS跨域限制
-- API服务不可用
-- 请求超时`);
+    setTestOutput(`## 网络错误\n\n**错误信息:** ${error.message}\n\n**可能原因:**\n- 网络连接问题\n- CORS跨域限制\n- API服务不可用\n- 请求超时`);
     message.error(`网络错误: ${error.message}`);
     return '';
   }
@@ -143,9 +146,10 @@ export const sendChatRequest = async (messages, modelInfo, setTestOutput, setIsS
  * @param {Object} modelInfo - 模型信息对象
  * @param {Function} setTestOutput - 设置输出回调
  * @param {Function} setIsStreaming - 设置流式状态回调
+ * @param {AbortSignal} signal - 用于取消请求的信号
  * @returns {Promise<string>} - 响应内容
  */
-export const handleTextTest = async (textInput, systemPrompt, modelInfo, setTestOutput, setIsStreaming) => {
+export const handleTextTest = async (textInput, systemPrompt, modelInfo, setTestOutput, setIsStreaming, signal) => {
   setIsStreaming(true);
   
   // 构建消息数组
@@ -155,14 +159,11 @@ export const handleTextTest = async (textInput, systemPrompt, modelInfo, setTest
   }
   messages.push({ role: 'user', content: textInput });
   
-  return await sendChatRequest(
-    messages,
-    modelInfo,
-    setTestOutput,
-    setIsStreaming
-  );
+  // 在调用 sendChatRequest 时传递 signal
+  return sendChatRequest(messages, modelInfo, setTestOutput, setIsStreaming, signal);
 };
 
+// 类似地修改 handleMultimodalTest 函数，添加 signal 参数
 /**
  * 处理多模态测试
  * @param {string} textInput - 用户输入的文本
