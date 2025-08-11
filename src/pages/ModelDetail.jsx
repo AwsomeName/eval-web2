@@ -2,81 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { modelsAPI } from '../utils/api';
-import { validateMediaFile, getMediaType, createPreviewUrl, revokePreviewUrl } from '../utils/mediaUtils';
+import { getMediaType, createPreviewUrl, revokePreviewUrl } from '../utils/mediaUtils';
 import { handleTextTest, handleMultimodalTest } from '../services/modelTestService';
 import { handleASRTest, validateAudioFile } from '../services/asrTestService';
 import { handleTTSTest, validateTTSText } from '../services/ttsService';
+import { handleRerankTest, validateRerankParams } from '../services/rerankTestService';
+import { handleEmbeddingTest, validateEmbeddingParams } from '../services/embeddingTestService';
+import { getPredefinedApiUrls, predefinedApiUrls } from '../utils/modelApiUrls';
 // 注意：handleImageGenerationTest使用动态导入，无需在这里添加静态导入
 import {
-  Form, Input, Select, Button, Card, Row, Col, Typography, 
-  Space, message, Upload, Modal, Tabs
+  Form, Button, Row, Col, Typography, 
+  message
 } from 'antd';
 import {
-  SaveOutlined, EditOutlined, DeleteOutlined, ArrowLeftOutlined,
-  RobotOutlined, SendOutlined, PlusOutlined
+  ArrowLeftOutlined, RobotOutlined
 } from '@ant-design/icons';
-import TestResultDisplay from '../components/TestResultDisplay';
-import MarkdownRenderer from '../components/MarkdownRenderer';
+import ModelTestPanel from '../components/ModelTestPanel';
+import ModelForm from '../components/ModelForm';
 
-const { Title, Text } = Typography;
-const { TextArea } = Input;
-const { Option } = Select;
-
-// 根据模型类型获取预定义的API URL选项
-const getPredefinedApiUrls = (modelType) => {
-  const baseUrls = [];
-  
-  // 根据模型类型调整各个API提供商的URL
-  if (modelType === 'image') {
-    // 图像生成模型的专用端点
-    baseUrls.push(
-      { label: 'OpenAI', value: 'https://api.openai.com/v1' },
-      { label: 'Azure OpenAI', value: 'https://your-resource-name.openai.azure.com' },
-      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1' },
-      { label: '智谱AI', value: 'https://open.bigmodel.cn/api/paas/v4' },
-      { label: '阿里云', value: 'https://dashscope.aliyuncs.com/api/v1' },
-      { label: '青云聚合', value: 'https://api.qingyuntop.top/v1/images/generations' }
-    );
-  } else if (modelType === 'video') {
-    // 视频生成模型的专用端点
-    baseUrls.push(
-      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1' },
-      { label: 'OpenAI', value: 'https://api.openai.com/v1' },
-      { label: 'Azure OpenAI', value: 'https://your-resource-name.openai.azure.com' },
-      { label: '智谱AI', value: 'https://open.bigmodel.cn/api/paas/v4' },
-      { label: '阿里云', value: 'https://dashscope.aliyuncs.com/api/v1' }
-    );
-  } else if (modelType === 'asr') {
-    // ASR语音识别模型的专用端点
-    baseUrls.push(
-      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1/audio/transcriptions' },
-      { label: 'OpenAI', value: 'https://api.openai.com/v1/audio/transcriptions' }
-    );
-  } else if (modelType === 'tts') {
-    // TTS语音合成模型的专用端点
-    baseUrls.push(
-      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1/audio/speech' },
-      { label: 'OpenAI', value: 'https://api.openai.com/v1/audio/speech' }
-    );
-  } else {
-    // 其他模型类型的通用端点
-    baseUrls.push(
-      { label: 'OpenAI', value: 'https://api.openai.com/v1' },
-      { label: 'Azure OpenAI', value: 'https://your-resource-name.openai.azure.com' },
-      { label: 'Anthropic', value: 'https://api.anthropic.com' },
-      { label: '百度文心', value: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop' },
-      { label: '智谱AI', value: 'https://open.bigmodel.cn/api/paas/v3' },
-      { label: '阿里云', value: 'https://dashscope.aliyuncs.com/api/v1' },
-      { label: '硅基流动', value: 'https://api.siliconflow.cn/v1' },
-      { label: '青云聚合', value: 'https://api.qingyuntop.top/v1' }
-    );
-  }
-  
-  return baseUrls;
-};
-
-// 默认的API URL选项（用于初始化）
-const predefinedApiUrls = getPredefinedApiUrls('text');
+const { Title } = Typography;
 
 const ModelDetail = () => {
   const { id } = useParams();
@@ -97,7 +41,7 @@ const ModelDetail = () => {
   const [abortController, setAbortController] = useState(null);
   const [systemPrompt, setSystemPrompt] = useState('');
   const [examplePreviewMode, setExamplePreviewMode] = useState(false);
-  const [descriptionPreviewMode, setDescriptionPreviewMode] = useState(true);
+  const [descriptionPreviewMode, setDescriptionPreviewMode] = useState(false);
   const [selectedApiUrl, setSelectedApiUrl] = useState('');
   const [customApiUrl, setCustomApiUrl] = useState(true);
   const [currentModelType, setCurrentModelType] = useState('text');
@@ -108,6 +52,10 @@ const ModelDetail = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
+  
+  // Rerank模型相关状态变量
+  const [rerankQuery, setRerankQuery] = useState('');
+  const [rerankDocuments, setRerankDocuments] = useState('');
   
   const isNew = id === 'new';
 
@@ -208,6 +156,17 @@ const ModelDetail = () => {
       message.error(error.message || '保存失败');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // 删除模型
+  const handleDelete = async () => {
+    try {
+      await modelsAPI.delete(id);
+      message.success('模型删除成功');
+      navigate('/models');
+    } catch (error) {
+      message.error(error.message || '删除失败');
     }
   };
 
@@ -323,6 +282,46 @@ const ModelDetail = () => {
           setIsStreaming,
           controller.signal // 传递 signal
         );
+      } else if (modelType === 'rerank') {
+        // Rerank重排序模型测试
+        const documents = rerankDocuments.split('\n').filter(doc => doc.trim().length > 0);
+        
+        // 验证rerank参数
+        const validation = validateRerankParams(rerankQuery, documents);
+        if (!validation.isValid) {
+          message.error(validation.errors.join(', '));
+          setTestOutput(`❌ 参数验证失败: ${validation.errors.join(', ')}\n`);
+          return;
+        }
+        
+        await handleRerankTest(
+          modelInfo,
+          rerankQuery,
+          documents,
+          setTestOutput,
+          setTesting
+        );
+      } else if (modelType === 'embedding') {
+        // Embedding嵌入模型测试
+        if (!testInput || !testInput.trim()) {
+          message.warning('Embedding模型测试需要输入文本内容');
+          return;
+        }
+        
+        // 验证embedding参数
+        const validation = validateEmbeddingParams(testInput);
+        if (!validation.isValid) {
+          message.error(validation.errors.join(', '));
+          setTestOutput(`❌ 参数验证失败: ${validation.errors.join(', ')}\n`);
+          return;
+        }
+        
+        await handleEmbeddingTest(
+          modelInfo,
+          testInput,
+          setTestOutput,
+          setTesting
+        );
       } else if (fileList.length > 0 && modelType === 'multimodal') {
         // 多模态测试
         const file = fileList[0].originFileObj;
@@ -416,389 +415,55 @@ const ModelDetail = () => {
         {/* 模型测试 */}
         {!isNew && (
           <Col xs={24} lg={10}>
-            <Card title="模型测试" style={{ height: 'fit-content' }} headStyle={{ textAlign: 'left' }}>
-              <div style={{ marginBottom: '16px', textAlign: 'left' }}>
-                <Text strong>System Prompt：</Text>
-                <TextArea
-                  rows={3}
-                  placeholder="输入system-prompt（可选）..."
-                  value={systemPrompt}
-                  onChange={(e) => setSystemPrompt(e.target.value)}
-                  style={{ marginTop: '8px', marginBottom: '16px' }}
-                />
-                
-                <Text strong>测试输入：</Text>
-                <TextArea
-                  rows={4}
-                  placeholder={
-                    form.getFieldValue('model_type') === 'asr' 
-                      ? "ASR模型测试主要依赖音频文件，此处可留空..." 
-                      : "请输入测试内容..."
-                  }
-                  value={testInput}
-                  onChange={(e) => setTestInput(e.target.value)}
-                  style={{ marginTop: '8px' }}
-                />
-                
-                {/* 添加多模态文件上传区域 */}
-                {form.getFieldValue('model_type') === 'multimodal' && (
-                  <div style={{ marginTop: '16px' }}>
-                    <Text strong>多模态文件上传：</Text>
-                    <div style={{ marginTop: '8px' }}>
-                      <Upload
-                        listType="picture-card"
-                        fileList={fileList}
-                        onPreview={handlePreview}
-                        onChange={handleFileChange}
-                        beforeUpload={validateMediaFile}
-                        maxCount={1}
-                      >
-                        {fileList.length >= 1 ? null : (
-                          <div>
-                            <PlusOutlined />
-                            <div style={{ marginTop: 8 }}>上传</div>
-                          </div>
-                        )}
-                      </Upload>
-                      <Modal
-                        open={previewOpen}
-                        title={previewTitle}
-                        footer={null}
-                        onCancel={() => setPreviewOpen(false)}
-                      >
-                        {previewImage.startsWith('data:image/') ? (
-                          <img alt="预览图片" style={{ width: '100%' }} src={previewImage} />
-                        ) : (
-                          <video 
-                            controls 
-                            style={{ width: '100%' }} 
-                            src={previewImage}
-                          >
-                            您的浏览器不支持视频标签
-                          </video>
-                        )}
-                      </Modal>
-                    </div>
-                  </div>
-                )}
-                
-                {/* 添加ASR音频文件上传区域 */}
-                {form.getFieldValue('model_type') === 'asr' && (
-                  <div style={{ marginTop: '16px' }}>
-                    <Text strong>音频文件上传：</Text>
-                    <div style={{ marginTop: '8px' }}>
-                      <Upload
-                        listType="text"
-                        fileList={fileList}
-                        onChange={handleFileChange}
-                        beforeUpload={(file) => {
-                          const isValid = validateAudioFile(file);
-                          return isValid ? false : Upload.LIST_IGNORE;
-                        }}
-                        maxCount={1}
-                        accept="audio/*"
-                      >
-                        {fileList.length >= 1 ? null : (
-                          <Button icon={<PlusOutlined />}>
-                            上传音频文件
-                          </Button>
-                        )}
-                      </Upload>
-                      <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
-                        支持格式：MP3、WAV、FLAC、AAC、OGG、WebM、M4A（最大25MB）
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <Button 
-                type="primary" 
-                icon={<SendOutlined />}
-                loading={testing}
-                onClick={handleTest}
-                style={{ marginBottom: '16px', width: '100%' }}
-              >
-                发送测试
-              </Button>
-
-              <div style={{ marginTop: '16px' }}>
-                <div style={{ marginTop: '8px' }}>
-                  <TestResultDisplay 
-                    output={testOutput}
-                    isLoading={testing && !testOutput}
-                    isStreaming={isStreaming}
-                    onClear={() => setTestOutput('')}
-                    onStop={handleStopRequest} // 添加停止回调
-                  />
-                </div>
-              </div>
-            </Card>
+            <ModelTestPanel
+              form={form}
+              testInput={testInput}
+              setTestInput={setTestInput}
+              systemPrompt={systemPrompt}
+              setSystemPrompt={setSystemPrompt}
+              rerankQuery={rerankQuery}
+              setRerankQuery={setRerankQuery}
+              rerankDocuments={rerankDocuments}
+              setRerankDocuments={setRerankDocuments}
+              fileList={fileList}
+              handleFileChange={handleFileChange}
+              handlePreview={handlePreview}
+              previewOpen={previewOpen}
+              setPreviewOpen={setPreviewOpen}
+              previewImage={previewImage}
+              previewTitle={previewTitle}
+              testing={testing}
+              handleTest={handleTest}
+              testOutput={testOutput}
+              setTestOutput={setTestOutput}
+              isStreaming={isStreaming}
+              handleStopRequest={handleStopRequest}
+            />
           </Col>
         )}
 
         {/* 模型信息表单 */}
         <Col xs={24} lg={!isNew ? 14 : 24}>
-          <Card 
-            title="模型信息"
-            headStyle={{ textAlign: 'left' }}
-            extra={
-              !isNew && hasRole(['admin', 'developer']) && (
-                <Space>
-                  {!editing ? (
-                    <Button 
-                      type="primary" 
-                      icon={<EditOutlined />}
-                      onClick={() => setEditing(true)}
-                    >
-                      编辑
-                    </Button>
-                  ) : null}
-                  <Button 
-                    danger 
-                    icon={<DeleteOutlined />}
-                    onClick={() => {
-                      // 删除确认逻辑可以在这里实现
-                    }}
-                  >
-                    删除
-                  </Button>
-                </Space>
-              )
-            }
-          >
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleSave}
-              disabled={!editing && !isNew}
-            >
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label="模型名称"
-                    name="name"
-                    rules={[{ required: true, message: '请输入模型名称' }]}
-                  >
-                    <Input placeholder="请输入模型名称" />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label="模型类型"
-                    name="model_type"
-                    rules={[{ required: true, message: '请选择模型类型' }]}
-                  >
-                    <Select 
-                      placeholder="请选择模型类型"
-                      onChange={handleModelTypeChange}
-                    >
-                      <Option value="text">文本模型</Option>
-                      <Option value="image">图像生成模型</Option>
-                      <Option value="video">视频生成模型</Option>
-                      <Option value="asr">音频识别-ASR</Option>
-                      <Option value="tts">语音合成-TTS</Option>
-                      <Option value="embedding">嵌入模型-emb</Option>
-                      <Option value="rerank">排序模型-rerank</Option>
-                      <Option value="audio">Audio模型</Option>
-                      <Option value="world">世界模型</Option>
-                      <Option value="autonomous_driving">自动驾驶模型</Option>
-                      <Option value="multimodal">多模态模型</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-              
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label="发布机构"
-                    name="publisher"
-                  >
-                    <Input placeholder="请输入发布机构" />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label="Model Name"
-                    name="model_name"
-                    rules={[{ required: true, message: '请输入模型的Model Name' }]}
-                  >
-                    <Input placeholder="请输入API中使用的模型名称，例如：gpt-4-turbo" />
-                  </Form.Item>
-                </Col>
-              </Row>
-              
-              <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                  <Form.Item
-                    label="API URL类型"
-                  >
-                    <Select
-                      value={selectedApiUrl}
-                      onChange={handleApiUrlChange}
-                      style={{ width: '100%' }}
-                      placeholder="选择API类型或自定义"
-                    >
-                      {currentPredefinedApiUrls.map((item) => (
-                        <Option key={item.value} value={item.value}>
-                          {item.label}
-                        </Option>
-                      ))}
-                      <Option value="">自定义</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-              
-              <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                  <Form.Item
-                    label="API URL"
-                    name="access_url"
-                    rules={[{ required: true, message: '请输入API URL' }]}
-                  >
-                    <Input 
-                      placeholder="请输入API URL"
-                      disabled={!customApiUrl || (!editing && !isNew)}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-              
-              <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                  <Form.Item
-                    label="API Key"
-                    name="access_key"
-                    rules={[{ required: true, message: '请输入API Key' }]}
-                  >
-                    <Input.Password placeholder="请输入API Key" />
-                  </Form.Item>
-                </Col>
-              </Row>
-              
-              <Form.Item
-                label="模型描述"
-                name="description"
-              >
-                {editing || isNew ? (
-                  <div style={{ position: 'relative' }}>
-                    {!descriptionPreviewMode ? (
-                      <TextArea 
-                        rows={4} 
-                        placeholder="描述模型的功能和特点（支持Markdown语法）"
-                      />
-                    ) : (
-                      <MarkdownRenderer
-                        content={form.getFieldValue('description') || ''}
-                        isStreaming={false}
-                      />
-                    )}
-                    <Button
-                      onClick={() => setDescriptionPreviewMode(!descriptionPreviewMode)}
-                      size="small"
-                      style={{
-                        position: 'absolute',
-                        top: '8px',
-                        right: '8px',
-                        zIndex: 1
-                      }}
-                    >
-                      {descriptionPreviewMode ? '编辑' : '预览'}
-                    </Button>
-                  </div>
-                ) : (
-                  <MarkdownRenderer
-                    content={form.getFieldValue('description') || ''}
-                    isStreaming={false}
-                  />
-                )}
-              </Form.Item>
-              
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label="输入格式"
-                    name="input_format"
-                  >
-                    <TextArea 
-                      rows={3} 
-                      placeholder="描述模型的输入格式，例如JSON结构等"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label="输出格式"
-                    name="output_format"
-                  >
-                    <TextArea 
-                      rows={3} 
-                      placeholder="描述模型的输出格式"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Form.Item
-                label="使用示例"
-                name="example"
-              >
-                <div style={{ position: 'relative' }}>
-                  {!examplePreviewMode ? (
-                    <TextArea 
-                      rows={4} 
-                      placeholder="提供模型使用的具体示例（支持Markdown语法）"
-                    />
-                  ) : (
-                    <MarkdownRenderer
-                      content={form.getFieldValue('example') || ''}
-                      isStreaming={false}
-                    />
-                  )}
-                  <Button
-                    onClick={() => setExamplePreviewMode(!examplePreviewMode)}
-                    size="small"
-                    style={{
-                      position: 'absolute',
-                      top: '8px',
-                      right: '8px',
-                      zIndex: 1
-                    }}
-                  >
-                    {examplePreviewMode ? '编辑' : '预览'}
-                  </Button>
-                </div>
-              </Form.Item>
-
-              {(editing || isNew) && (
-                <Form.Item>
-                  <Space>
-                    <Button 
-                      type="primary" 
-                      htmlType="submit" 
-                      icon={<SaveOutlined />}
-                      loading={saving}
-                    >
-                      {isNew ? '创建模型' : '保存修改'}
-                    </Button>
-                    <Button onClick={() => {
-                      if (isNew) {
-                        navigate('/models');
-                      } else {
-                        setEditing(false);
-                        form.resetFields();
-                        form.setFieldsValue(model);
-                      }
-                    }}>
-                      取消
-                    </Button>
-                  </Space>
-                </Form.Item>
-              )}
-            </Form>
-          </Card>
+          <ModelForm
+            form={form}
+            model={model}
+            editing={editing}
+            setEditing={setEditing}
+            isNew={isNew}
+            saving={saving}
+            handleSave={handleSave}
+            handleDelete={handleDelete}
+            navigate={navigate}
+            currentPredefinedApiUrls={currentPredefinedApiUrls}
+            selectedApiUrl={selectedApiUrl}
+            customApiUrl={customApiUrl}
+            handleApiUrlChange={handleApiUrlChange}
+            handleModelTypeChange={handleModelTypeChange}
+            descriptionPreviewMode={descriptionPreviewMode}
+            setDescriptionPreviewMode={setDescriptionPreviewMode}
+            examplePreviewMode={examplePreviewMode}
+            setExamplePreviewMode={setExamplePreviewMode}
+          />
         </Col>
       </Row>
     </div>

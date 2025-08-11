@@ -5,7 +5,9 @@ import {
   NodeIndexOutlined, 
   TeamOutlined, 
   TrophyOutlined,
-  ArrowRightOutlined
+  ArrowRightOutlined,
+  ApiOutlined,
+  SettingOutlined
 } from '@ant-design/icons';
 import { useState, useEffect } from 'react'; // 添加缺失的导入
 import { useNavigate } from 'react-router-dom';
@@ -82,6 +84,22 @@ const Home = () => {
       count: stats.leaderboards,
       path: '/leaderboards',
       color: '#eb2f96'
+    },
+    {
+      title: 'API库',
+      description: '统一API接口管理和测试',
+      icon: <ApiOutlined />,
+      count: 0,
+      path: '/apis',
+      color: '#13c2c2'
+    },
+    {
+      title: 'MCP库',
+      description: '模型控制协议配置管理',
+      icon: <SettingOutlined />,
+      count: 0,
+      path: '/mcps',
+      color: '#f5222d'
     }
   ];
 
@@ -146,7 +164,7 @@ const Home = () => {
       {/* 资源库卡片 */}
       <Row gutter={[16, 16]} className="resource-cards">
         {resourceCards.map((card, index) => (
-          <Col xs={24} sm={12} md={8} lg={6} xl={4.8} xxl={4} key={index}>
+          <Col xs={24} sm={12} md={8} lg={6} xl={8} xxl={6} key={index}>
             <Card
               hoverable
               style={{ 

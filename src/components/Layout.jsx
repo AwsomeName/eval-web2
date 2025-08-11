@@ -12,7 +12,9 @@ import {
   DatabaseOutlined,
   ApiOutlined,
   AppstoreOutlined,
-  BarChartOutlined
+  BarChartOutlined,
+  CloudOutlined,
+  ToolOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { modelsAPI } from '../utils/api';
@@ -80,7 +82,7 @@ const Layout = () => {
     {
       key: '/flows',
       label: 'Flow库',
-      icon: <ApiOutlined />
+      icon: <ToolOutlined />
     },
     {
       key: '/agents',
@@ -91,6 +93,16 @@ const Layout = () => {
       key: '/leaderboards',
       label: '榜单库',
       icon: <BarChartOutlined />
+    },
+    {
+      key: '/apis',
+      label: 'API库',
+      icon: <ApiOutlined />
+    },
+    {
+      key: '/mcps',
+      label: 'MCP库',
+      icon: <CloudOutlined />
     }
   ];
 
@@ -277,8 +289,7 @@ const Layout = () => {
             padding: '24px', 
             borderRadius: '8px',
             minHeight: 'calc(100vh - 112px)',
-            maxWidth: '1440px',
-            margin: '0 auto'
+            width: '100%'
           }}>
             <Outlet />
           </div>

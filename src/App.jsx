@@ -16,6 +16,8 @@ import Agents from './pages/Agents';
 import AgentDetail from './pages/AgentDetail';
 import Leaderboards from './pages/Leaderboards';
 import LeaderboardDetail from './pages/LeaderboardDetail';
+import APIs from './pages/APIs';
+import MCPs from './pages/MCPs';
 import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 
@@ -40,6 +42,8 @@ function App() {
                 <Route path="agents/:id" element={<AgentDetail />} />
                 <Route path="leaderboards" element={<Leaderboards />} />
                 <Route path="leaderboards/:id" element={<LeaderboardDetail />} />
+                <Route path="apis" element={<APIs />} />
+                <Route path="mcps" element={<MCPs />} />
               </Route>
             </Routes>
           </div>

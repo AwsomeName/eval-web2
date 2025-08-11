@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 // 使用ES Module导入
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -97,6 +98,7 @@ const MarkdownRenderer = ({ content, isError = false, isStreaming = false, isCar
       )}
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
         components={{
           code({ node, inline, className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '');
@@ -226,6 +228,87 @@ const MarkdownRenderer = ({ content, isError = false, isStreaming = false, isCar
               }}
               {...props}
             />
+          ),
+          audio: ({ src, children, ...props }) => {
+            // 验证音频源
+            const isValidSrc = src && (src.includes('blob:') || src.startsWith('http') || src.startsWith('data:') || src.startsWith('/'));
+            
+            // 添加调试信息
+            console.log('Audio src validation:', {
+              src: src,
+              isValidSrc: isValidSrc,
+              startsWithBlob: src && src.includes('blob:'),
+              startsWithHttp: src && src.startsWith('http'),
+              startsWithData: src && src.startsWith('data:')
+            });
+            
+            return (
+              <div style={{ margin: '16px 0' }}>
+                <audio
+                  controls
+                  preload="auto"
+                  style={{
+                    width: '100%',
+                    maxWidth: '400px',
+                    borderRadius: '8px',
+                    outline: 'none',
+                    backgroundColor: '#f5f5f5'
+                  }}
+                  src={src}
+                  onError={(e) => {
+                    console.error('Audio loading error:', e);
+                    console.log('Audio src:', src);
+                    console.log('Audio element:', e.target);
+                    console.log('Audio readyState:', e.target.readyState);
+                    console.log('Audio networkState:', e.target.networkState);
+                  }}
+                  onLoadStart={() => {
+                    console.log('Audio loading started:', src);
+                  }}
+                  onCanPlay={() => {
+                    console.log('Audio can play:', src);
+                  }}
+                  onLoadedData={() => {
+                    console.log('Audio data loaded:', src);
+                  }}
+                  onLoadedMetadata={() => {
+                    console.log('Audio metadata loaded:', src);
+                  }}
+                  {...props}
+                >
+                  {children || '您的浏览器不支持音频播放。'}
+                </audio>
+                {!isValidSrc && (
+                  <div style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px' }}>
+                    ⚠️ 音频源无效: {src}
+                  </div>
+                )}
+              </div>
+            );
+          },
+          button: ({ children, onClick, style, ...props }) => (
+            <button
+              onClick={onClick ? () => eval(onClick) : undefined}
+              style={{
+                background: '#1890ff',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                margin: '8px 0',
+                ...style
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#40a9ff';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = '#1890ff';
+              }}
+              {...props}
+            >
+              {children}
+            </button>
           )
         }}
       >

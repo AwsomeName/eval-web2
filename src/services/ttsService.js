@@ -52,7 +52,7 @@ export const handleTTSTest = async (
     const requestBody = {
       model: modelName,
       input: textInput.trim(),
-      voice: 'alloy', // 默认声音，可以根据需要调整
+      voice: `${modelName}:alex`, // 使用模型特定的声音格式
       response_format: 'mp3', // 音频格式
       speed: 1.0 // 语速
     };
@@ -114,10 +114,78 @@ export const handleTTSTest = async (
     if (contentType && contentType.includes('audio/')) {
       // 处理音频响应
       const audioBlob = await response.blob();
+      
+      // 验证音频blob
+      if (!audioBlob || audioBlob.size === 0) {
+        throw new Error('接收到的音频数据为空');
+      }
+      
       const audioUrl = URL.createObjectURL(audioBlob);
       
+      // 创建下载函数
+      const downloadAudio = () => {
+        const link = document.createElement('a');
+        link.href = audioUrl;
+        link.download = `tts-${modelName}-${Date.now()}.mp3`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+      
+      // 清理之前的blob URL（如果存在）
+      if (window.currentTTSAudioUrl) {
+        URL.revokeObjectURL(window.currentTTSAudioUrl);
+      }
+      
+      // 保存当前的blob URL以便后续清理
+      window.currentTTSAudioUrl = audioUrl;
+      
+      // 将下载函数绑定到全局对象，以便在Markdown中调用
+      window.downloadTTSAudio = downloadAudio;
+      
+      // 添加页面卸载时的清理函数
+      if (!window.ttsCleanupRegistered) {
+        window.addEventListener('beforeunload', () => {
+          if (window.currentTTSAudioUrl) {
+            URL.revokeObjectURL(window.currentTTSAudioUrl);
+          }
+        });
+        window.ttsCleanupRegistered = true;
+      }
+      
+      // 验证音频URL是否有效
+      console.log('生成的音频URL:', audioUrl);
+      console.log('音频Blob类型:', audioBlob.type);
+      console.log('音频Blob大小:', audioBlob.size);
+      
+      // 检查浏览器兼容性
+      const audioElement = document.createElement('audio');
+      const canPlayMp3 = audioElement.canPlayType('audio/mpeg');
+      const canPlayWav = audioElement.canPlayType('audio/wav');
+      const supportsBlobUrls = window.URL && typeof window.URL.createObjectURL === 'function';
+      
+      console.log('浏览器音频支持:', {
+        canPlayMp3: canPlayMp3,
+        canPlayWav: canPlayWav,
+        supportsBlobUrls: supportsBlobUrls,
+        userAgent: navigator.userAgent
+      });
+      
+      // 如果浏览器不支持blob URLs，显示警告
+      if (!supportsBlobUrls) {
+        console.warn('浏览器不支持Blob URLs，音频播放可能失败');
+      }
+      
+      // 构建浏览器兼容性信息
+      let compatibilityInfo = '';
+      if (!supportsBlobUrls) {
+        compatibilityInfo = '\n\n⚠️ **浏览器兼容性警告:** 您的浏览器可能不支持Blob URLs，音频播放功能可能无法正常工作。';
+      } else if (canPlayMp3 === '' || canPlayMp3 === 'no') {
+        compatibilityInfo = '\n\n⚠️ **音频格式警告:** 您的浏览器可能不支持MP3格式，请尝试下载文件后使用其他播放器播放。';
+      }
+      
       // 构建成功的输出信息
-      const outputContent = `## TTS语音合成结果\n\n**合成状态:** ✅ 成功\n\n**输入文本:** ${textInput}\n\n**模型:** ${modelName}\n\n**音频格式:** ${requestBody.response_format}\n\n**音频大小:** ${(audioBlob.size / 1024).toFixed(2)} KB\n\n**播放音频:**\n\n<audio controls>\n  <source src="${audioUrl}" type="audio/mpeg">\n  您的浏览器不支持音频播放。\n</audio>\n\n**下载链接:** [点击下载音频文件](${audioUrl})\n\n---\n\n*注意：音频文件将在页面刷新后失效，请及时下载保存。*`;
+      const outputContent = `## TTS语音合成结果\n\n**合成状态:** ✅ 成功\n\n**输入文本:** ${textInput}\n\n**模型:** ${modelName}\n\n**音频格式:** ${requestBody.response_format}\n\n**音频大小:** ${(audioBlob.size / 1024).toFixed(2)} KB\n\n**浏览器支持:** MP3格式支持度 - ${canPlayMp3 || '未知'}${compatibilityInfo}\n\n**播放音频:**\n\n<audio controls preload="auto" style="width: 100%; max-width: 400px;" onloadstart="console.log('TTS音频开始加载')" oncanplay="console.log('TTS音频可以播放')" onerror="console.error('TTS音频加载失败', event)">\n  <source src="${audioUrl}" type="${audioBlob.type || 'audio/mpeg'}">\n  您的浏览器不支持音频播放。请点击下载按钮获取音频文件。\n</audio>\n\n**下载链接:** <button onclick="window.downloadTTSAudio()" style="background: #1890ff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">点击下载音频文件</button>\n\n---\n\n*注意：音频文件将在页面刷新后失效，请及时下载保存。*`;
       
       setTestOutput(outputContent);
       message.success('TTS语音合成完成');

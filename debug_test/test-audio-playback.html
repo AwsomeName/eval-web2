@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频播放测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .audio-container {
+            margin: 10px 0;
+        }
+        audio {
+            width: 100%;
+            max-width: 400px;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+        .error {
+            color: #ff4d4f;
+        }
+        .success {
+            color: #52c41a;
+        }
+    </style>
+</head>
+<body>
+    <h1>TTS音频播放测试</h1>
+    
+    <div class="test-section">
+        <h2>测试1: 本地音频文件播放</h2>
+        <div class="audio-container">
+            <audio controls preload="auto">
+                <source src="../debug_test/tts-test-output.mp3" type="audio/mpeg">
+                您的浏览器不支持音频播放。
+            </audio>
+        </div>
+        <p>如果上面的音频控件是灰色的，说明音频文件不存在或格式有问题。</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试2: 生成Blob URL音频</h2>
+        <button onclick="generateTestAudio()">生成测试音频</button>
+        <div id="blobAudioContainer"></div>
+        <div id="blobLog" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试3: 模拟TTS响应</h2>
+        <button onclick="simulateTTSResponse()">模拟TTS音频生成</button>
+        <div id="ttsAudioContainer"></div>
+        <div id="ttsLog" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>浏览器信息</h2>
+        <div id="browserInfo" class="log"></div>
+    </div>
+
+    <script>
+        // 日志函数
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            container.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // 生成测试音频（使用Web Audio API）
+        async function generateTestAudio() {
+            const container = document.getElementById('blobAudioContainer');
+            const logId = 'blobLog';
+            
+            try {
+                log(logId, '开始生成测试音频...');
+                
+                // 创建音频上下文
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const sampleRate = audioContext.sampleRate;
+                const duration = 2; // 2秒
+                const frameCount = sampleRate * duration;
+                
+                // 创建音频缓冲区
+                const audioBuffer = audioContext.createBuffer(1, frameCount, sampleRate);
+                const channelData = audioBuffer.getChannelData(0);
+                
+                // 生成440Hz的正弦波（A音）
+                for (let i = 0; i < frameCount; i++) {
+                    channelData[i] = Math.sin(2 * Math.PI * 440 * i / sampleRate) * 0.3;
+                }
+                
+                log(logId, '音频数据生成完成，正在转换为WAV格式...');
+                
+                // 转换为WAV格式
+                const wavBlob = audioBufferToWav(audioBuffer);
+                const audioUrl = URL.createObjectURL(wavBlob);
+                
+                log(logId, `音频Blob创建成功: ${audioUrl}`, 'success');
+                log(logId, `Blob大小: ${wavBlob.size} bytes`);
+                log(logId, `Blob类型: ${wavBlob.type}`);
+                
+                // 创建音频元素
+                container.innerHTML = `
+                    <div class="audio-container">
+                        <audio controls preload="auto" onloadstart="log('${logId}', 'Audio loadstart事件触发')" 
+                               oncanplay="log('${logId}', 'Audio canplay事件触发', 'success')"
+                               onerror="log('${logId}', 'Audio error事件触发: ' + event.target.error?.message, 'error')">
+                            <source src="${audioUrl}" type="audio/wav">
+                            您的浏览器不支持音频播放。
+                        </audio>
+                    </div>
+                    <button onclick="URL.revokeObjectURL('${audioUrl}'); log('${logId}', 'Blob URL已释放')">释放Blob URL</button>
+                `;
+                
+            } catch (error) {
+                log(logId, `生成音频失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 将AudioBuffer转换为WAV格式的Blob
+        function audioBufferToWav(buffer) {
+            const length = buffer.length;
+            const arrayBuffer = new ArrayBuffer(44 + length * 2);
+            const view = new DataView(arrayBuffer);
+            
+            // WAV文件头
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+            
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + length * 2, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, buffer.sampleRate, true);
+            view.setUint32(28, buffer.sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, length * 2, true);
+            
+            // 音频数据
+            const channelData = buffer.getChannelData(0);
+            let offset = 44;
+            for (let i = 0; i < length; i++) {
+                const sample = Math.max(-1, Math.min(1, channelData[i]));
+                view.setInt16(offset, sample * 0x7FFF, true);
+                offset += 2;
+            }
+            
+            return new Blob([arrayBuffer], { type: 'audio/wav' });
+        }
+        
+        // 模拟TTS响应
+        async function simulateTTSResponse() {
+            const container = document.getElementById('ttsAudioContainer');
+            const logId = 'ttsLog';
+            
+            try {
+                log(logId, '模拟TTS API调用...');
+                
+                // 检查是否有现有的测试音频文件
+                const testFiles = [
+                    '../debug_test/tts-test-output.mp3',
+                    '../debug_test/tts-proxy-output.mp3',
+                    '../debug_test/tts-test-1.mp3'
+                ];
+                
+                for (const file of testFiles) {
+                    try {
+                        const response = await fetch(file);
+                        if (response.ok) {
+                            const audioBlob = await response.blob();
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            
+                            log(logId, `找到测试音频文件: ${file}`, 'success');
+                            log(logId, `文件大小: ${audioBlob.size} bytes`);
+                            log(logId, `文件类型: ${audioBlob.type}`);
+                            
+                            // 模拟TTS服务的输出格式
+                            const outputContent = `
+                                <h3>TTS语音合成结果</h3>
+                                <p><strong>合成状态:</strong> ✅ 成功</p>
+                                <p><strong>音频大小:</strong> ${(audioBlob.size / 1024).toFixed(2)} KB</p>
+                                <div class="audio-container">
+                                    <audio controls preload="auto" style="width: 100%; max-width: 400px;"
+                                           onloadstart="log('${logId}', 'TTS Audio loadstart事件触发')"
+                                           oncanplay="log('${logId}', 'TTS Audio canplay事件触发', 'success')"
+                                           onerror="log('${logId}', 'TTS Audio error事件触发: ' + (event.target.error?.message || 'Unknown error'), 'error')">
+                                        <source src="${audioUrl}" type="${audioBlob.type || 'audio/mpeg'}">
+                                        您的浏览器不支持音频播放。
+                                    </audio>
+                                </div>
+                                <button onclick="downloadAudio('${audioUrl}', 'tts-test.mp3')">下载音频</button>
+                            `;
+                            
+                            container.innerHTML = outputContent;
+                            return;
+                        }
+                    } catch (e) {
+                        // 继续尝试下一个文件
+                    }
+                }
+                
+                log(logId, '未找到测试音频文件，请先运行TTS测试生成音频文件', 'error');
+                
+            } catch (error) {
+                log(logId, `模拟TTS失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 下载音频文件
+        function downloadAudio(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // 显示浏览器信息
+        function showBrowserInfo() {
+            const info = document.getElementById('browserInfo');
+            info.innerHTML = `
+                <div>用户代理: ${navigator.userAgent}</div>
+                <div>支持的音频格式:</div>
+                <div>- MP3: ${document.createElement('audio').canPlayType('audio/mpeg')}</div>
+                <div>- WAV: ${document.createElement('audio').canPlayType('audio/wav')}</div>
+                <div>- OGG: ${document.createElement('audio').canPlayType('audio/ogg')}</div>
+                <div>- WebM: ${document.createElement('audio').canPlayType('audio/webm')}</div>
+                <div>Web Audio API: ${window.AudioContext || window.webkitAudioContext ? '支持' : '不支持'}</div>
+                <div>Blob URL: ${window.URL && window.URL.createObjectURL ? '支持' : '不支持'}</div>
+            `;
+        }
+        
+        // 页面加载完成后显示浏览器信息
+        window.addEventListener('load', showBrowserInfo);
+    </script>
+</body>
+</html>
